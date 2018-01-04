@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Cardio</string>
+    <string name="edit_message">Enter your login</string>
+    <string name="button_connect">Connect</string>
+    <string name="enter_password">Enter your password</string>
+    <string name="button_cardio">Cardiac Frequency</string>
+    <string name="button_temperature">Temperature</string>
+    <string name="button">Acceleration</string>
+    <string name="title">Menu</string>
+    <string name="refresh">Refresh</string>
+
+</resources>

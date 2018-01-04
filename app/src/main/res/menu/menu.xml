@@ -1,0 +1,31 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_save"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="action_save"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_cardio"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:title="Cardiac frequency"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_temp"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="Temperature"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_accel"
+        android:icon="@android:drawable/ic_menu_rotate"
+        android:title="Acceleration"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_parameter"
+        android:title="Parameter"
+        app:showAsAction="never" />
+
+</menu>
