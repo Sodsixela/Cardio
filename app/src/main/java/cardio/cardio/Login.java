@@ -30,6 +30,8 @@ public class Login extends AppCompatActivity {
     /** Called when the user taps the Send button */
     public void sendMessage(View view) {
         String success="";
+        TextView textView = findViewById(R.id.textView2);
+        textView.setText("Connexion...");
 
         try {
             new CallServer().execute("").get();//where we will call the server
@@ -110,16 +112,20 @@ public class Login extends AppCompatActivity {
                         client.close();   //closing the connection
                         //textView.setText("finish");
                     } catch (UnknownHostException e) {
+                        responseLine = "Trying to connect to unknown host";
                         System.err.println("Trying to connect to unknown host: " + e);
                     } catch (IOException e) {
+                        responseLine = "Error, couldn't reach the server";
                         System.err.println("IOException:  " + e);
                     }
                 }
 
 
             } catch (UnknownHostException e) {
+                responseLine = "Trying to connect to unknown host";
                 e.printStackTrace();
             } catch (IOException e) {
+                responseLine = "Error, couldn't reach the server";
                 e.printStackTrace();
             }
 
@@ -139,7 +145,10 @@ public class Login extends AppCompatActivity {
         }
 
         @Override
-        protected void onPreExecute() {}
+        protected void onPreExecute() {
+            TextView textView = findViewById(R.id.textView2);
+            textView.setText("Connexion...");
+        }
 
         @Override
         protected void onProgressUpdate(Void... values) {}
