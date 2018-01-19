@@ -7,16 +7,27 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class DisplayMessageActivity extends AppCompatActivity {
     public static final String GET_GRAPHIC = "getDataType";
-    public ArrayList<Float> Data;
+    private ArrayList<Float> Data;
+    private static int port = 8080;
+    private static String host="192.168.43.212";
     protected void onCreate(Bundle savedInstanceState) {//initialise the page
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_display_message);
@@ -28,7 +39,8 @@ public class DisplayMessageActivity extends AppCompatActivity {
         // Capture the layout's TextView and set the string as its text
         TextView textView = findViewById(R.id.textView);
         textView.setText(message);
-        new CallServer().execute("");//to call the server we need a thread
+        if(!(message ==null))
+            new CallServer().execute("");//to call the server we need a thread
     }
     public void getData(View view)//when pressing refresh, to have the lastest data into the server
     {
@@ -62,38 +74,48 @@ public class DisplayMessageActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {//watch CallServer in Login for more information
             try {
-                Socket client = new Socket("192.168.0.2", 8080);  //connect to server
-                //DataOutputStream os = null;
-                //DataInputStream is = null;
-                //os = new DataOutputStream(client.getOutputStream());
-                //is = new DataInputStream(client.getInputStream());
+                InetAddress address = InetAddress.getByName(host);
+                Socket client = new Socket(address, port);
+
+                PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+                BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 if (client != null ) {
                     try {
                         String[] ok= {"Data"};
+                        String on= "{\"type\":\"Data\"}";
+                        out.println(on);
 
-                        ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-                        out.writeObject(ok);//Send the message "Data" to the server to have back all the data
-                        ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+
+                        String message = in.readLine();
                         try {
-                            ///can be changed, here we limit us to 3 table of 24 number in only one for the first test of socket
-                            ArrayList<Double> objects = (ArrayList<Double>)in.readObject();//where we will have these data
-                            ArrayList<Double> fill=new ArrayList<Double>();//used to split the data from objects
-                            for(int i=0;i<objects.size();i++)//we split objects to put the good data into the good DataUser table
-                            {
-                                fill.add(objects.get(i));
-                                if(i==23) {
-                                    DataUser.getInstance().setCrd(fill);
-                                    fill=new ArrayList<Double>();
+                            JSONObject jsonObj = new JSONObject( message);
+                            JSONArray jCardio = jsonObj.getJSONArray("Cardio");
+                            ArrayList<Double> fill=new ArrayList<>();
+                            if (jCardio != null) {
+                                for (int i=0;i<jCardio.length();i++){
+                                    fill.add(jCardio.getDouble(i));
                                 }
-                                else  if(i==47) {
-                                    DataUser.getInstance().setTmp(fill);
-                                    fill=new ArrayList<Double>();
-                                }
-                                else  if(i==71) {
-                                    DataUser.getInstance().setAcc(fill);
-                                }
+                                DataUser.getInstance().setCrd(fill);
+                                fill=new ArrayList<Double>();
                             }
-                        } catch (ClassNotFoundException e) {
+                            JSONArray jTemp = jsonObj.getJSONArray("Temp");
+                            if (jTemp != null) {
+                                for (int i=0;i<jTemp.length();i++){
+                                    System.out.println(jTemp.getDouble(i));
+                                    fill.add(jTemp.getDouble(i));
+                                }
+                                DataUser.getInstance().setTmp(fill);
+                                fill=new ArrayList<Double>();
+                            }
+                            JSONArray jAccel = jsonObj.getJSONArray("Accel");
+                            if (jAccel != null) {
+                                for (int i=0;i<jAccel.length();i++){
+                                    fill.add(jAccel.getDouble(i));
+                                }
+                                DataUser.getInstance().setAcc(fill);
+                                fill=new ArrayList<Double>();
+                            }
+                        } catch (JSONException e) {
                             e.printStackTrace();
                         }
 
@@ -104,7 +126,6 @@ public class DisplayMessageActivity extends AppCompatActivity {
                         out.close();
                         in.close();
                         client.close();   //closing the connection
-                        //textView.setText("finish");
                     } catch (UnknownHostException e) {
                         System.err.println("Trying to connect to unknown host: " + e);
                     } catch (IOException e) {
