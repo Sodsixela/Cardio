@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="edit_message">"输入你的用户名 "</string>
+    <string name="button_connect">签到</string>
+    <string name="enter_password">输入您的密码</string>
+    <string name="button_cardio">心率</string>
+    <string name="button_temperature">温度</string>
+    <string name="button">促进</string>
+    <string name="title">菜单</string>
+    <string name="refresh">刷新</string>
+    <string name="average">平均</string>
+    <string name="parameter">参数</string>
+    <string name="ChangeName">Change usernam</string>
+    <string name="ChangePWD">Change Password</string>
+    <string name="authorization">Authorization :</string>
+    <string name="login">Login :</string>
+    <string name="call">Phone call</string>
+</resources>

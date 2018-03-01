@@ -9,7 +9,7 @@
 
     <EditText
         android:id="@+id/editText"
-        android:layout_width="214dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="304dp"
         android:ems="10"
@@ -23,12 +23,14 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="88dp"
+        android:layout_width="wrap_content"
         android:layout_height="52dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="8dp"
         android:elevation="1dp"
         android:onClick="sendMessage"
         android:text="@string/button_connect"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -36,8 +38,8 @@
 
     <EditText
         android:id="@+id/editText2"
-        android:layout_width="213dp"
-        android:layout_height="43dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:ems="10"
         android:hint="@string/enter_password"
@@ -50,7 +52,7 @@
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
-        android:layout_height="17dp"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginLeft="108dp"
         android:layout_marginStart="4dp"
@@ -64,13 +66,15 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="216dp"
+        android:layout_width="0dp"
         android:layout_height="229dp"
         android:layout_marginBottom="48dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintBottom_toTopOf="@+id/editText"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@mipmap/clogo_round" />
 
     <ImageView

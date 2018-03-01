@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="button_temperature">Température</string>
+    <string name="refresh">Actualiser</string>
+    <string name="title">Menu</string>
+    <string name="average">Moyenne</string>
+    <string name="edit_message">Entrez votre identifiant</string>
+    <string name="button_cardio">Rythme cardiaque</string>
+    <string name="enter_password">Entrez votre mot de passe</string>
+    <string name="button">Accélération</string>
+    <string name="button_connect">Se connecter</string>
+    <string name="parameter">Paramètres</string>
+    <string name="ChangeName">Changer le nom</string>
+    <string name="ChangePWD">Changer le mot de passe</string>
+    <string name="authorization">Autorisation :</string>
+    <string name="login">Connexion :</string>
+    <string name="call">Appel téléphonique</string>
+</resources>

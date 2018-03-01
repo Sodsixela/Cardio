@@ -4,13 +4,17 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
+        android:icon="@mipmap/clogo_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:icon="@mipmap/clogo_round">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".Login"
             android:screenOrientation="portrait">
@@ -27,11 +31,30 @@
             <!-- The meta-data tag is required if you support API level 15 and lower -->
 
         </activity>
-        <activity android:name=".Graphic"
+        <activity
+            android:name=".Graphic"
             android:parentActivityName=".DisplayMessageActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DisplayMessageActivity" />
+        </activity>
+        <activity
+            android:name=".Parameter"
+            android:label="@string/parameter"
+            android:parentActivityName=".DisplayMessageActivity"
+            android:theme="@style/ParamTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DisplayMessageActivity" />
+        </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".DisplayMessageActivity"
+            android:theme="@style/ParamTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="cardio.cardio.DisplayMessageActivity" />
         </activity>
     </application>
 
