@@ -1,5 +1,7 @@
 package cardio.cardio;
 
+import android.content.Context;
+
 /**
  * Created by Administrateur on 04-Jan-18.
  */
@@ -7,6 +9,7 @@ package cardio.cardio;
 class User {
     private static String name;
     private static String password;
+    private static Context c;
     private static final User ourInstance = new User();
     public static String getName() {
         return name;
@@ -24,7 +27,13 @@ class User {
         User.password = password;
     }
 
+    public static Context getC() {
+        return c;
+    }
 
+    public static void setC(Context c) {
+        User.c = c;
+    }
 
     static User getInstance() {
         return ourInstance;

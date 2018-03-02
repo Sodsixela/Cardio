@@ -2,30 +2,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_save"
-        android:icon="@android:drawable/ic_menu_add"
-        android:title="action_save"
+        android:id="@+id/action_refresh"
+        android:icon="@android:drawable/ic_popup_sync"
+        android:title="@string/refresh"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_cardio"
         android:icon="@android:drawable/ic_menu_compass"
-        android:title="Cardiac frequency"
+        android:title="@string/button_cardio"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_temp"
         android:icon="@android:drawable/ic_menu_view"
-        android:title="Temperature"
-        app:showAsAction="ifRoom" />
+        android:title="@string/button_temperature" />
     <item
         android:id="@+id/action_accel"
         android:icon="@android:drawable/ic_menu_rotate"
-        android:title="Acceleration"
+        android:title="@string/button"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_parameter"
-        android:title="Parameter"
+        android:title="@string/parameter"
         app:showAsAction="never" />
 
 </menu>
