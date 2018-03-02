@@ -95,7 +95,6 @@ public class DisplayMessageActivity extends AppCompatActivity implements Locatio
                     while ( (receiveString = bufferedReader.readLine()) != null ) {
                         stringBuilder.append(receiveString);
                     }
-                    System.out.println("read:"+stringBuilder.toString());
 
                     Server.getInstance().setIpAddress(stringBuilder.toString());
 
@@ -110,7 +109,6 @@ public class DisplayMessageActivity extends AppCompatActivity implements Locatio
             }
         }
         host=Server.getInstance().getIpAddress();
-        System.out.println("start "+ host);
         if(!(message ==null))
             new CallServer().execute("");//to call the server we need a thread
     }
@@ -182,7 +180,6 @@ public class DisplayMessageActivity extends AppCompatActivity implements Locatio
         protected String doInBackground(String... params) {//watch CallServer in Login for more information
             try {
                 InetAddress address = InetAddress.getByName(host);
-                System.out.print(address.toString()+" "+ port);
                 Socket client = new Socket(address, port);
 
                 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
@@ -191,14 +188,12 @@ public class DisplayMessageActivity extends AppCompatActivity implements Locatio
                     try {
                         String[] ok= {"Data"};
                         String on= "{\"type\":\"Data\"}";
-                        System.out.println(on);
                         out.println(on);
                         /*ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
                         out.writeObject(ok);//Send the message "Data" to the server to have back all the data*/
                         String message = in.readLine();
-                        System.out.println("message :"+message);
                         try {
-                            JSONArray jCardio = new JSONArray(message);
+                            /*JSONArray jCardio = new JSONArray(message);
                             System.out.println("Json array : "+jCardio);
                             ArrayList<Double> fill=new ArrayList<>();
                             if (jCardio != null) {
@@ -231,9 +226,9 @@ public class DisplayMessageActivity extends AppCompatActivity implements Locatio
                                     }
                                 }
                                 DataUser.getInstance().setAcc(fill);
-                            }
+                            }*/
 
-                            /*JSONObject jsonObj = new JSONObject( message);
+                            JSONObject jsonObj = new JSONObject( message);
                             JSONArray jCardio = jsonObj.getJSONArray("Cardio");
                             ArrayList<Double> fill=new ArrayList<>();
                             if (jCardio != null) {
@@ -258,7 +253,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements Locatio
                                 }
                                 DataUser.getInstance().setAcc(fill);
                                 fill=new ArrayList<Double>();
-                            }*/
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

@@ -15,4 +15,13 @@
     <string name="authorization">Authorization :</string>
     <string name="login">Login :</string>
     <string name="call">Phone call</string>
+    <string name="nb1">Phone number 1</string>
+    <string name="nb2">Phone number 2</string>
+    <string name="nb3">Phone number 3</string>
+    <string name="emergencyCall">Emergency call</string>
+    <string name="docNb">Number</string>
+    <string name="name">name</string>
+    <string name="title_activity_settings" translatable="false">Settings</string>
+    <string name="pref_header_general">General</string>
+    <string name="phoneCall">Phone call</string>
 </resources>

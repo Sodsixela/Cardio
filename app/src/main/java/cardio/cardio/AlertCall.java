@@ -46,12 +46,14 @@ public class AlertCall extends AsyncTask<Context, String, String> implements Loc
     final AlertCall thisActivity = this;
     LocationManager locationManager;
 
-    public AlertCall(LocationManager lm){
-        locationManager=lm;
+    public AlertCall(Context lm){
+        //locationManager=lm;
+        locationManager = (LocationManager) lm.getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
     protected String doInBackground(Context... params) {
+
         String responseLine = null;
         Looper.prepare();
         //Keep a socket open to listen to all the UDP trafic that is destined for this port
@@ -117,24 +119,25 @@ public class AlertCall extends AsyncTask<Context, String, String> implements Loc
             if(!prefs.getString("emergency","").equals(""))
                 numbers.add(prefs.getString("emergency",""));
         }
-        locationManager = (LocationManager)User.getC().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-                }
+        if(prefs.getBoolean("gps",false)) {
 
-                //Location localisation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, null);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 1000, this);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1000, this);
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
 
-                System.out.println("o,");
+            //Location localisation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, this, null);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 1000, this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1000, this);
+           }
+                System.out.println("gps "+prefs.getBoolean("gps",false));
 
                /* System.out.println("Latitude" +localisation.getLatitude()+ " Longitude" + localisation.getLongitude());
                 Toast.makeText(context, "Latitude" +localisation.getLatitude(), Toast.LENGTH_SHORT).show();
@@ -146,6 +149,7 @@ public class AlertCall extends AsyncTask<Context, String, String> implements Loc
         {
             if(Build.VERSION.SDK_INT > 15)
             {
+
                 if(ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
                     // TODO: Consider calling
 

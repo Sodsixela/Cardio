@@ -43,7 +43,7 @@ public class Graphic extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(DataUser.getInstance().getCrd()==null)
+        if(DataUser.getInstance()==null)
         {
             Intent intent = new Intent(this, DisplayMessageActivity.class);
             intent.putExtra(EXTRA_MESSAGE, "@string/resfresh");
