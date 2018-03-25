@@ -1,25 +1,18 @@
-package cardio.cardio;
+package e.administrateur.cardioproject;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.LocationManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,19 +24,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.DatagramPacket;
@@ -53,28 +35,35 @@ import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 public class Login extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "getMessage";
     private boolean first=false;
+    private EditText name;
+    private EditText password;
+    private TextView info;
+    private ProgressBar pb;
+    private Button click;
     @Override
     protected void onCreate(Bundle savedInstanceState) {//create the page
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         Context context = getApplicationContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        name=findViewById(R.id.editText);
+        password=findViewById(R.id.editText2);
+        info=findViewById(R.id.textView2);
+        pb = findViewById(R.id.logWait);
+        click = findViewById(R.id.button);
         if(prefs.getString("name","").equals(""))
         {
             first=true;
             AlertDialog alertDialog = new AlertDialog.Builder(Login.this).create();
-            alertDialog.setTitle("First use");
-            alertDialog.setMessage("Set a username and password to set them");
+            alertDialog.setTitle(getString(R.string.first));
+            alertDialog.setMessage(getString(R.string.setnp));
             alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK",
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
@@ -82,12 +71,16 @@ public class Login extends AppCompatActivity {
                         }
                     });
             alertDialog.show();
-            TextView message=findViewById(R.id.textView2);
-            message.setText("Set your username and password");
+            info.setText(getString(R.string.setnp));
         }
         System.out.println("name:"+prefs.getString("name",""));
         System.out.println("host:"+prefs.getString("host","0"));
-        try {
+        if(prefs.getString("host"," ").equals(" "))
+        {
+            new FindServer().execute("");
+        }
+        Server.getInstance().setIpAddress(prefs.getString("host",""));
+        /*try {
             InputStream inputStream = context.openFileInput("host.txt");
 
             if ( inputStream != null ) {
@@ -125,32 +118,60 @@ public class Login extends AppCompatActivity {
     protected void onStart() {
 
         super.onStart();
-
-        User.setName("");
+    }
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {//here to save datas
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        savedInstanceState.putString("loginName", name.getText().toString());
+        savedInstanceState.putString("loginPwd",password.getText().toString());
+    }
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // Restore UI state from the savedInstanceState.
+        // This bundle has also been passed to onCreate.
+        name.setText(savedInstanceState.getString("loginName"));
+        password.setText(savedInstanceState.getString("loginPwd"));
     }
     /** Called when the user taps the Send button */
     public void sendMessage(View view) {
-        String success="";
-        TextView textView = findViewById(R.id.textView2);
-        textView.setText(getString(R.string.connection));
-
+        info.setText(getString(R.string.connection));
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            // request permission (see result in onRequestPermissionsResult() method)
+            ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.SEND_SMS}, 123);
+            info.setText(getString(R.string.acceptSMS));
+            return;
+        }
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // request permission (see result in onRequestPermissionsResult() method)
+            ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
+            info.setText(getString(R.string.acceptSMS));
+            return;
+        }
         //try {
-        if(first==true)
+        if(first)
         {
+            new FindServer().execute("");
             //need authorization too
-
-
+            /*AsyncTask<String, Void, String> chg = */new SettingsActivity.CallServer(name.getText().toString()).execute("Username");
+            pause();
+            //while (!chg.isCancelled());
+            /*chg = */new SettingsActivity.CallServer(password.getText().toString()).execute("Password");
+            //while (!chg.isCancelled());
+            unlock();
             Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
             Intent intent2 = new Intent(getApplicationContext(), Alert.class);
             startService(intent2);
-            Toast.makeText(getApplicationContext(), success, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Set some emergency phone numbers in notification", Toast.LENGTH_SHORT).show();
             //bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
             startActivity(intent);
         }
         else
             new CallServer().execute("");//where we will call the server
             //we cannot do it the mai thread then we need to create a thread, CallServer
-
 
         /*}/*catch (InterruptedException e) {
             e.printStackTrace();
@@ -160,55 +181,66 @@ public class Login extends AppCompatActivity {
 
 
     }
+    public void pause()
+    {
+        pb.setVisibility(View.VISIBLE);
+    }
+    public void unlock()
+    {
+        pb.setVisibility(View.GONE);
+        click.setEnabled(true);
+    }
     private class CallServer extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... params) {
-            String responseLine = null;
+            String responseLine;
             publishProgress(getString(R.string.connection));
+
             try {
-                EditText editText = (EditText) findViewById(R.id.editText);//we take the name and password
-                EditText editText2 = (EditText) findViewById(R.id.editText2);
+                System.out.println("ip:"+ InetAddress.getByName(""));
+                // System.out.println("ip:"+InetAddress.get);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+            try {
                 Socket client = new Socket(Server.getInstance().getIpAddress(), 8088);  //connect to server
-
-
                 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-                if (client != null /*&& os != null && is != null*/) {
+                try {
+                    // The capital string before each colon has a special meaning to SMTP
+                    // you may want to read the SMTP specification, RFC1822/3
+
+                    String on= "{\"type\":\"Connexion\",\"name\":\""+name.getText().toString()+"\",\"pwd\":\""+password.getText().toString()+"\"}";
+                    out.println(on);
+                    String message = in.readLine();
                     try {
-                        // The capital string before each colon has a special meaning to SMTP
-                        // you may want to read the SMTP specification, RFC1822/3
-
-                        String on= "{\"type\":\"Connexion\",\"name\":\""+editText.getText().toString()+"\",\"pwd\":\""+editText2.getText().toString()+"\"}";
-                        out.println(on);
-                        String message = in.readLine();
-                        try {
-                            JSONObject jsonObj = new JSONObject( message);
-                            if(jsonObj.getString("Connexion").equals("Connected"))//if it's ok we initialise the data of the user
-                            {
-                                User.getInstance().setName(editText.getText().toString());
-                                User.getInstance().setPassword(editText2.getText().toString());
-                            }
-                            responseLine=jsonObj.getString("Connexion");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            responseLine="Error";
+                        JSONObject jsonObj = new JSONObject( message);
+                        if(jsonObj.getString("Connexion").equals("Connected"))//if it's ok we initialise the data of the user
+                        {
+                            User.setName(name.getText().toString());
+                            User.setPassword(password.getText().toString());
                         }
-
-                        out.close();
-                        in.close();
-                        client.close();   //closing the connection
-                        //textView.setText("finish");
-                    } catch (UnknownHostException e) {
-                        responseLine = "Error, trying to connect to unknown host";
-                        System.err.println("Error, trying to connect to unknown host: " + e);
-                    } catch (IOException e) {
-                        responseLine = "Error, couldn't reach the server";
-                        System.err.println("IOException:  " + e);
-
+                        responseLine=jsonObj.getString("Connexion");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        responseLine="Error";
                     }
+
+                    out.close();
+                    in.close();
+                    client.close();   //closing the connection
+                    //textView.setText("finish");
+                } catch (UnknownHostException e) {
+                    responseLine = "Error, trying to connect to unknown host";
+                    System.err.println("Error, trying to connect to unknown host: " + e);
+                } catch (IOException e) {
+                    responseLine = "Error, couldn't reach the server";
+                    System.err.println("IOException:  " + e);
+
                 }
+
 
 
             } catch (UnknownHostException e) {
@@ -224,41 +256,26 @@ public class Login extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            ProgressBar pb = (ProgressBar) findViewById(R.id.logWait);
             pb.setVisibility(View.GONE);
-            TextView textView = findViewById(R.id.textView2);
             if(result.contains("Error"))
             {
-                textView.setText(getString(R.string.searchServ));
+                info.setText(getString(R.string.searchServ));
                 new FindServer().execute("");
             }
             else if (!result.equals("Connected")){//if it is not good, we show it to the user
-                Button click = (Button) findViewById(R.id.button);
                 click.setEnabled(true);
-                textView.setText(result);
+                info.setText(result);
             }
 
            else//if the login worked go in the main page
             {
-                Button click = (Button) findViewById(R.id.button);
                 click.setEnabled(true);
-                textView.setText("");
-                String success=getString(R.string.hello)+", "+User.getInstance().getName();
+                info.setText("");
+                String success=getString(R.string.hello)+", "+User.getName();
                 try
                 {
                     Bundle saveName= new Bundle();
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-                        // request permission (see result in onRequestPermissionsResult() method)
-                        ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.SEND_SMS}, 123);
-                        textView.setText(getString(R.string.acceptSMS));
-                        return;
-                    }
-                    if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // request permission (see result in onRequestPermissionsResult() method)
-                    ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
-                    textView.setText(getString(R.string.acceptSMS));
-                    return;
-                }
+
                     saveName.putString("Username", User.getName());
                     Intent intent = new Intent(getApplicationContext(), DisplayMessageActivity.class);
                     Intent intent2 = new Intent(getApplicationContext(), Alert.class);
@@ -280,17 +297,12 @@ public class Login extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            ProgressBar pb = (ProgressBar) findViewById(R.id.logWait);
             pb.setVisibility(View.VISIBLE);
-            Button click = (Button) findViewById(R.id.button);
             click.setEnabled(false);
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
-            TextView textView = findViewById(R.id.textView2);
-            //textView.setText(values[0]);
-
         }
     }
     private class FindServer extends AsyncTask<String, String, String> {
@@ -312,6 +324,7 @@ public class Login extends AppCompatActivity {
                     c.send(sendPacket);
                     System.out.println(getClass().getName() + ">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 // Broadcast the message over all the network interfaces
                 Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
@@ -330,6 +343,7 @@ public class Login extends AppCompatActivity {
                             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
                             c.send(sendPacket);
                         } catch (Exception e) {
+                            e.printStackTrace();
                         }
                         System.out.println(getClass().getName() + ">>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
                     }
@@ -378,18 +392,16 @@ public class Login extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            ProgressBar pb = (ProgressBar) findViewById(R.id.logWait);
             pb.setVisibility(View.GONE);
-            Button click = (Button) findViewById(R.id.button);
             click.setEnabled(true);
-            TextView textView = findViewById(R.id.textView2);
             if(result!=null) {
-                textView.setText("Server found, sign in again");
-                new CallServer().execute("");
+                info.setText(getString(R.string.signAgain));
+                if(!first)
+                    new CallServer().execute("");
             }
             else
             {
-                textView.setText(getString(R.string.ErrServ));
+                info.setText(getString(R.string.ErrServ));
             }
 
 
@@ -397,14 +409,12 @@ public class Login extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            ProgressBar pb = (ProgressBar) findViewById(R.id.logWait);
-            pb.setVisibility(View.VISIBLE);
+           pause();
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
-            TextView textView = findViewById(R.id.textView2);
-            textView.setText(values[0]);}
+            info.setText(values[0]);}
 
     }
 }

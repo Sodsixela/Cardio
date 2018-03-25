@@ -1,24 +1,22 @@
-package cardio.cardio;
+package e.administrateur.cardioproject;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,18 +26,14 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import cardio.cardio.R;
-
-import static cardio.cardio.Login.EXTRA_MESSAGE;
+import static e.administrateur.cardioproject.Login.EXTRA_MESSAGE;
 
 public class Graphic extends AppCompatActivity {
     public static final String GET_GRAPHIC = "getDataType";
-    private static int port = 8088;
     private static String host=Server.getInstance().getIpAddress();
-    private LineGraphSeries<DataPoint> series;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,34 +54,38 @@ public class Graphic extends AppCompatActivity {
         TextView textView = findViewById(R.id.textView3);
         textView.setText(message);
 
-        LineGraphSeries<DataPoint> highLimit = new LineGraphSeries<DataPoint>();
-        LineGraphSeries<DataPoint> lowLimit = new LineGraphSeries<DataPoint>();
-        int i=0;
+        LineGraphSeries<DataPoint> highLimit = new LineGraphSeries<>();
+        LineGraphSeries<DataPoint> lowLimit = new LineGraphSeries<>();
         ArrayList<Double> data = new ArrayList<>();//it will take the data of the choosen table
-        if(message.equals("CARDIO")){///depends on the chosen table
-            highLimit.appendData(new DataPoint(0,100), true, 2);
-            highLimit.appendData(new DataPoint(30,100), true, 2);
-            lowLimit.appendData(new DataPoint(0,70), true, 2);
-            lowLimit.appendData(new DataPoint(30,70), true, 2);
-            data=DataUser.getInstance().getCrd();
-        }else if (message.equals("TEMP"))
-        {
-            highLimit.appendData(new DataPoint(0,37.8), true, 2);
-            highLimit.appendData(new DataPoint(30,37.8), true, 2);
-            lowLimit.appendData(new DataPoint(0,36.1), true, 2);
-            lowLimit.appendData(new DataPoint(30,36.1), true, 2);
-            data=DataUser.getInstance().getTmp();
-        }else if (message.equals("ACCEL"))
-        {
-            //series = (BarGraphSeries<DataPoint>) this.series;
-            highLimit.appendData(new DataPoint(0,30), true, 2);
-            highLimit.appendData(new DataPoint(30,30), true, 2);
-            lowLimit.appendData(new DataPoint(0,0), true, 2);
-            lowLimit.appendData(new DataPoint(30,0), true, 2);
-            data=DataUser.getInstance().getAcc();
+        switch (message) {
+            case "CARDIO": ///depends on the chosen table
+                textView.setText(R.string.button_cardio);
+                highLimit.appendData(new DataPoint(0, 100), true, 2);
+                highLimit.appendData(new DataPoint(30, 100), true, 2);
+                lowLimit.appendData(new DataPoint(0, 70), true, 2);
+                lowLimit.appendData(new DataPoint(30, 70), true, 2);
+                data = DataUser.getInstance().getCrd();
+                break;
+            case "TEMP":
+                textView.setText(R.string.button_temperature);
+                highLimit.appendData(new DataPoint(0, 37.8), true, 2);
+                highLimit.appendData(new DataPoint(30, 37.8), true, 2);
+                lowLimit.appendData(new DataPoint(0, 36.1), true, 2);
+                lowLimit.appendData(new DataPoint(30, 36.1), true, 2);
+                data = DataUser.getInstance().getTmp();
+                break;
+            case "ACCEL":
+                textView.setText(R.string.button);
+                //series = (BarGraphSeries<DataPoint>) this.series;
+                highLimit.appendData(new DataPoint(0, 30), true, 2);
+                highLimit.appendData(new DataPoint(30, 30), true, 2);
+                lowLimit.appendData(new DataPoint(0, 0), true, 2);
+                lowLimit.appendData(new DataPoint(30, 0), true, 2);
+                data = DataUser.getInstance().getAcc();
+                break;
         }
 
-        GraphView graph = (GraphView) findViewById(R.id.graph);
+        GraphView graph = findViewById(R.id.graph);
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMaxX(24);
         /*graph.getViewport().setScrollable(true);
@@ -96,7 +94,7 @@ public class Graphic extends AppCompatActivity {
         graph.addSeries(lowLimit);
         highLimit.setColor(Color.RED);
         lowLimit.setColor(Color.RED);
-        series = new LineGraphSeries<DataPoint>();//show graph
+        LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
         for(int j=0; j<data.size();j++)
         {
             series.appendData(new DataPoint(j,data.get(j)), true, data.size());
@@ -114,13 +112,25 @@ public class Graphic extends AppCompatActivity {
 
         }
         average = average/data.size();
+        ListView infolist= findViewById(R.id.listInfo);
+        String[] title;
+        Drawable[] icon;
+        String[] info;
         if(warning>0)
         {
-            TextView warningView = findViewById(R.id.warning);
-            warningView.setText("Warning, you go beyond\nthe limits "+warning +" times");
+            title= new String[]{getString(R.string.average), getString(R.string.warning)};
+            icon= new Drawable[]{getResources().getDrawable(android.R.drawable.ic_search_category_default),getResources().getDrawable(android.R.drawable.ic_dialog_alert)};
+            String warn="You go beyond the limits "+warning +" times";
+            info=new String[]{String.valueOf(average),warn};
         }
-        TextView textAverage = findViewById(R.id.textView5);
-        textAverage.setText(" "+average+" ");
+        else
+        {
+            title= new String[]{getString(R.string.average)};
+            icon= new Drawable[]{getResources().getDrawable(android.R.drawable.ic_search_category_default)};
+            info=new String[]{String.valueOf(average)};
+        }
+        ListInfo listInfo= new ListInfo(getApplicationContext(),title,info,icon);
+        infolist.setAdapter(listInfo);
     }
 
     @Override
@@ -139,7 +149,7 @@ public class Graphic extends AppCompatActivity {
         // Restore UI state from the savedInstanceState.
         // This bundle has also been passed to onCreate.
         Intent intent = getIntent();
-        String message = savedInstanceState.getString("MyString");
+        String message = savedInstanceState.getString("graphic");
         intent.putExtra(GET_GRAPHIC, message);
     }
 
@@ -206,67 +216,63 @@ public class Graphic extends AppCompatActivity {
         protected String doInBackground(String... params) {//watch CallServer in Login for more information
             try {
                 InetAddress address = InetAddress.getByName(host);
+                int port = 8088;
                 Socket client = new Socket(address, port);
 
                 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                if (client != null ) {
+                try {
+                    String on= "{\"type\":\"Data\"}";
+                    out.println(on);
+                    /*ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+                    out.writeObject(ok);//Send the message "Data" to the server to have back all the data*/
+                    String message = in.readLine();
                     try {
-                        String[] ok= {"Data"};
-                        String on= "{\"type\":\"Data\"}";
-                        out.println(on);
-                        /*ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-                        out.writeObject(ok);//Send the message "Data" to the server to have back all the data*/
-                        String message = in.readLine();
-                        try {
-                            JSONArray jCardio = new JSONArray(message);
-                            System.out.println("Json array : "+jCardio);
-                            ArrayList<Double> fill=new ArrayList<>();
-                            if (jCardio != null) {
-                                for (int i=0;i<jCardio.length();i++){
-                                    //fill.add(jCardio.getDouble(i));
-                                    if(jCardio.getJSONObject(i).get("type").equals("heartrate"))
-                                    {
-                                        fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                        System.out.println(jCardio.getJSONObject(i).getDouble("value"));
-                                    }
-                                }
-                                DataUser.getInstance().setCrd(fill);
-                                fill=new ArrayList<Double>();
-                                for (int i=0;i<jCardio.length();i++){
-                                    //fill.add(jCardio.getDouble(i));
-                                    if(jCardio.getJSONObject(i).get("type").equals("temperature"))
-                                    {
-                                        fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                        System.out.println(jCardio.getJSONObject(i).getDouble("value"));
-                                    }
-                                }
-                                DataUser.getInstance().setTmp(fill);
-                                fill=new ArrayList<Double>();
-                                for (int i=0;i<jCardio.length();i++){
-                                    //fill.add(jCardio.getDouble(i));
-                                    if(jCardio.getJSONObject(i).get("type").equals("acceleration"))
-                                    {
-                                        fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                        System.out.println(jCardio.getJSONObject(i).getDouble("value"));
-                                    }
-                                }
-                                DataUser.getInstance().setAcc(fill);
+                        JSONArray jCardio = new JSONArray(message);
+                        System.out.println("Json array : "+jCardio);
+                        ArrayList<Double> fill=new ArrayList<>();
+                        for (int i=0;i<jCardio.length();i++){
+                            //fill.add(jCardio.getDouble(i));
+                            if(jCardio.getJSONObject(i).get("type").equals("heartrate"))
+                            {
+                                fill.add(jCardio.getJSONObject(i).getDouble("value"));
+                                System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
+                        DataUser.getInstance().setCrd(fill);
+                        fill=new ArrayList<>();
+                        for (int i=0;i<jCardio.length();i++){
+                            //fill.add(jCardio.getDouble(i));
+                            if(jCardio.getJSONObject(i).get("type").equals("temperature"))
+                            {
+                                fill.add(jCardio.getJSONObject(i).getDouble("value"));
+                                System.out.println(jCardio.getJSONObject(i).getDouble("value"));
+                            }
+                        }
+                        DataUser.getInstance().setTmp(fill);
+                        fill=new ArrayList<>();
+                        for (int i=0;i<jCardio.length();i++){
+                            //fill.add(jCardio.getDouble(i));
+                            if(jCardio.getJSONObject(i).get("type").equals("acceleration"))
+                            {
+                                fill.add(jCardio.getJSONObject(i).getDouble("value"));
+                                System.out.println(jCardio.getJSONObject(i).getDouble("value"));
+                            }
+                        }
+                        DataUser.getInstance().setAcc(fill);
 
-                        out.close();
-                        in.close();
-                        client.close();   //closing the connection
-                        //textView.setText("finish");
-                    } catch (UnknownHostException e) {
-                        System.err.println("Trying to connect to unknown host: " + e);
-                    } catch (IOException e) {
-                        System.err.println("IOException:  " + e);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+
+                    out.close();
+                    in.close();
+                    client.close();   //closing the connection
+                    //textView.setText("finish");
+                } catch (UnknownHostException e) {
+                    System.err.println("Trying to connect to unknown host: " + e);
+                } catch (IOException e) {
+                    System.err.println("IOException:  " + e);
                 }
 
 

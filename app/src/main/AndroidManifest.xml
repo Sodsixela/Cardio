@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cardio.cardio">
+    package="e.administrateur.cardioproject">
 
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
@@ -25,6 +27,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:screenOrientation="portrait"
             android:name=".DisplayMessageActivity"
             android:label="@string/title">
 
@@ -33,16 +36,8 @@
         </activity>
         <activity
             android:name=".Graphic"
+            android:screenOrientation="portrait"
             android:parentActivityName=".DisplayMessageActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".DisplayMessageActivity" />
-        </activity>
-        <activity
-            android:name=".Parameter"
-            android:label="@string/parameter"
-            android:parentActivityName=".DisplayMessageActivity"
-            android:theme="@style/ParamTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DisplayMessageActivity" />
@@ -54,8 +49,14 @@
             android:theme="@style/ParamTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="cardio.cardio.DisplayMessageActivity" />
+                android:value="e.administrateur.cardioproject.DisplayMessageActivity" />
         </activity>
+
+        <service
+            android:name=".Alert"
+            android:enabled="true"
+            android:exported="true" />
+
     </application>
 
 </manifest>

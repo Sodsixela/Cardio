@@ -1,37 +1,21 @@
-package cardio.cardio;
+package e.administrateur.cardioproject;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.SwitchPreference;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.support.v7.app.AlertDialog;
-import android.text.InputType;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -63,14 +47,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     private static EditTextPreference name;
     private static EditTextPreference password;
 
-    /**
-     * A preference value change listener that updates the preference's summary
-     * to reflect its new value.
-     */
-    private String value;
-    private SharedPreferences.OnSharedPreferenceChangeListener listener;
     private void createListener() {
-        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        /*
+      A preference value change listener that updates the preference's summary
+      to reflect its new value.
+     */
+        SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
             @Override
             public void onSharedPreferenceChanged(
                     SharedPreferences preference, String key) {
@@ -124,23 +106,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
-            System.out.println("value "+stringValue);
             if (preference instanceof EditTextPreference){
                 if (preference.getKey().equals("name")) {
                     // update the changed gallery name to summary filed
 
 // Set up the input
-                    //final EditText input = new EditText(this);
-                    //final EditTextPreference input_name = (EditTextPreference) findPreference("name");
-                    System.out.println("valueName "+stringValue);
-                    SettingsActivity set = new SettingsActivity();
                     data = /*set.getName();set.name.getText().toString()*/stringValue;
 
                             try {
-                                System.out.println("valueName++ "+stringValue);
-                                if(!data.equals(User.getName()))
+                                if(!data.equals(User.getName()) && !data.equals(""))
                                 {
-                                    System.out.println("name: "+data);
                                     new SettingsActivity.CallServer().execute("Username").get();
                                     name.setText(data);
                                     Toast.makeText(context, "Changed to '"+data+"'",Toast.LENGTH_SHORT).show();
@@ -154,16 +129,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 }
                 else if (preference.getKey().equals("pwd")) {
                     // update the changed gallery name to summary filed
-                    SettingsActivity set = new SettingsActivity();
                     data = /*set.getName();set.password.getText().toString()*/stringValue;
-                    System.out.println(data);
                     try {
                         if(!data.equals(User.getPassword()) && !data.equals(""))
                         {
-                            System.out.println("password: "+data);
                             new SettingsActivity.CallServer().execute("Password").get();
                             password.setText("");
-                            Toast.makeText(set.context, "Changed to '"+data+"'",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Changed to '"+data+"'",Toast.LENGTH_SHORT).show();
 
                         }
 
@@ -394,7 +366,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     //USE TO SEND MODIFICATION TO THE SERVER
 
     public static class CallServer extends AsyncTask<String, Void, String> {
-
+        private final String change;
+        CallServer(String change)
+        {
+            this.change=change;
+        }
+        CallServer()
+        {
+            change = null;
+        }
         @Override
         protected String doInBackground(String... params) {
             String responseLine = "error";
@@ -405,40 +385,53 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-                if (client != null /*&& os != null && is != null*/) {
-                    try {
-                        // The capital string before each colon has a special meaning to SMTP
-                        // you may want to read the SMTP specification, RFC1822/3
-
-                        String on= "{\"type\":\"Modify\",\"dataset\":\""+params[0]+"\",\"value\":\""+data+"\"}";
-                        out.println(on);
-                        String message = in.readLine();
-
-                        System.out.println("message: "+ (String) message);
-                        try {
-                            JSONObject jsonObj = new JSONObject( message);
-                            if(jsonObj.getString("Change").contains("Changed"))//if it's ok we initialise the data of the user
-                            {
-                                responseLine=jsonObj.getString("Change");
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            responseLine="Error";
-                        }
-
-
-                        out.close();
-                        in.close();
-                        client.close();   //closing the connection
-                        //textView.setText("finish");
-                    } catch (UnknownHostException e) {
-                        responseLine = "Trying to connect to unknown host";
-                        System.err.println("Trying to connect to unknown host: " + e);
-                    } catch (IOException e) {
-                        responseLine = "Error, couldn't reach the server";
-                        System.err.println("IOException:  " + e);
-
+                try {
+                    // The capital string before each colon has a special meaning to SMTP
+                    // you may want to read the SMTP specification, RFC1822/3
+                    String on;
+                    if(change==null)
+                        on= "{\"type\":\"Modify\",\"dataset\":\""+params[0]+"\",\"value\":\""+data+"\"}";
+                    else {
+                        on = "{\"type\":\"Modify\",\"dataset\":\"" + params[0] + "\",\"value\":\"" + change + "\"}";
+                        data=change;
                     }
+                    out.println(on);
+                    String message = in.readLine();
+                    try {
+                        JSONObject jsonObj = new JSONObject( message);
+                        if(jsonObj.getString("Change").contains("Changed"))//if it's ok we initialise the data of the user
+                        {
+                            responseLine=jsonObj.getString("Change");
+                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                            SharedPreferences.Editor editor =prefs.edit();
+                            if(params[0].equals("Username"))
+                            {
+                                editor.putString("name",data);
+                            }
+                            else
+                            {
+                                editor.putString("pwd",data);
+                            }
+
+                            editor.apply();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        responseLine="Error";
+                    }
+
+
+                    out.close();
+                    in.close();
+                    client.close();   //closing the connection
+                    //textView.setText("finish");
+                } catch (UnknownHostException e) {
+                    responseLine = "Trying to connect to unknown host";
+                    System.err.println("Trying to connect to unknown host: " + e);
+                } catch (IOException e) {
+                    responseLine = "Error, couldn't reach the server";
+                    System.err.println("IOException:  " + e);
+
                 }
 
 
@@ -454,7 +447,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(context, result,Toast.LENGTH_SHORT).show();
+            //if(change!=null)
+                //context=getApplicationContext();//if it's from login, need to change the context
+            Toast.makeText(context.getApplicationContext(), result,Toast.LENGTH_SHORT).show();
             /*System.out.println("zef");
             Toast.makeText(Parameter.this, "Text", Toast.LENGTH_SHORT).show();*/
         }

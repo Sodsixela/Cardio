@@ -1,4 +1,4 @@
-package e.administrateur.cardiotest;
+package e.administrateur.cardioproject;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("e.administrateur.cardiotest", appContext.getPackageName());
+        assertEquals("e.administrateur.cardioproject", appContext.getPackageName());
     }
 }

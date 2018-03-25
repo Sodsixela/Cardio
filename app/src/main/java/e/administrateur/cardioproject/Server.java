@@ -1,18 +1,15 @@
-package cardio.cardio;
+package e.administrateur.cardioproject;
 
-/**
- * Created by Administrateur on 17-Jan-18.
- */
 
 class Server {//CAN DISAPEAR WITH PERSISTANCE
     private String ipAddress;
     private static final Server ourInstance = new Server();
 
-    public String getIpAddress() {
+    String getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(String ipAddress) {
+    void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
 

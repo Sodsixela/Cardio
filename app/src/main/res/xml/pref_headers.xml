@@ -3,12 +3,12 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="cardio.cardio.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="e.administrateur.cardioproject.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="cardio.cardio.SettingsActivity$NotificationPreferenceFragment"
+        android:fragment="e.administrateur.cardioproject.SettingsActivity$NotificationPreferenceFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/pref_header_notifications" />
 

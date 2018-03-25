@@ -1,6 +1,6 @@
 <PreferenceScreen xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    tools:context="cardio.cardio.SettingsActivity">
+    tools:context="e.administrateur.cardioproject.SettingsActivity">
 
 
 <PreferenceCategory
@@ -20,16 +20,16 @@
             android:title="@string/ChangeName" />
         <!-- NOTE: EditTextPreference accepts EditText attributes. -->
         <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-        <EditTextPreference
-            android:id="@+id/chgePwd"
-            android:capitalize="words"
-            android:defaultValue="@string/ChangePWD"
-            android:inputType="textCapWords"
-            android:key="pwd"
-            android:maxLines="1"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:title="@string/ChangePWD" />
+    <EditTextPreference
+        android:id="@+id/chgePwd"
+        android:capitalize="words"
+        android:defaultValue="@string/ChangePWD"
+        android:inputType="textCapWords"
+        android:key="pwd"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/ChangePWD" />
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/authorization"
@@ -38,18 +38,18 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="call"
-            android:summary="@string/pref_description_social_recommendations"
+            android:summary="non"
             android:title="@string/phoneCall" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="sms"
-            android:summary="@string/pref_description_social_recommendations"
+            android:summary="no"
             android:title="SMS" />
 
         <SwitchPreference
             android:defaultValue="true"
             android:key="gps"
-            android:summary="@string/pref_description_social_recommendations"
+            android:summary="nein"
             android:title="GPS" />
 
 

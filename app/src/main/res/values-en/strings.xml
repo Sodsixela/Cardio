@@ -24,4 +24,21 @@
     <string name="title_activity_settings" translatable="false">Settings</string>
     <string name="pref_header_general">General</string>
     <string name="phoneCall">Phone call</string>
+    <string name="searchServ">Searching the server</string>
+    <string name="ErrServ">Error, can\'t find the server</string>
+    <string name="connection">Connection...</string>
+    <string name="acceptSMS">You need to allow SMS</string>
+    <string name="hello">Hello</string>
+    <string name="danger">" is in danger"</string>
+    <string name="alert">ALERT</string>
+    <string name="emergency">EMERGENCY</string>
+    <string name="place">at</string>
+    <string name="notifTitle">The alert listener is running</string>
+    <string name="alerttext">Alert call test</string>
+    <string name="warning">Warning</string>
+    <string name="information">Informations</string>
+    <string name="setnp">Set your username and password</string>
+    <string name="first">First use</string>
+    <string name="signAgain">Server found, sign in again</string>
+    <string name="alertTest">Simulate an alert</string>
 </resources>

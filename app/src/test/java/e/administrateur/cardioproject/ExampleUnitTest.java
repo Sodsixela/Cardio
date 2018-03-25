@@ -1,4 +1,4 @@
-package e.administrateur.cardiotest;
+package e.administrateur.cardioproject;
 
 import org.junit.Test;
 

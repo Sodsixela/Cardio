@@ -1,6 +1,5 @@
-package cardio.cardio;
+package e.administrateur.cardioproject;
 
-import android.content.Context;
 
 /**
  * Created by Administrateur on 04-Jan-18.
@@ -18,11 +17,11 @@ class User {
         User.name = name;
     }
 
-    public static String getPassword() {
+    static String getPassword() {
         return password;
     }
 
-    public static void setPassword(String password) {
+    static void setPassword(String password) {
         User.password = password;
     }
 
