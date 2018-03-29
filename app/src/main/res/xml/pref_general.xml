@@ -36,20 +36,9 @@
         android:key="authorization">
 
         <SwitchPreference
-            android:defaultValue="false"
-            android:key="call"
-            android:summary="non"
-            android:title="@string/phoneCall" />
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="sms"
-            android:summary="no"
-            android:title="SMS" />
-
-        <SwitchPreference
             android:defaultValue="true"
             android:key="gps"
-            android:summary="nein"
+            android:summary="@string/GPSdetail"
             android:title="GPS" />
 
 

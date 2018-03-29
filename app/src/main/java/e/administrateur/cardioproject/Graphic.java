@@ -1,14 +1,20 @@
 package e.administrateur.cardioproject;
 
+import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.jjoe64.graphview.GraphView;
@@ -33,31 +39,39 @@ import static e.administrateur.cardioproject.Login.EXTRA_MESSAGE;
 public class Graphic extends AppCompatActivity {
     public static final String GET_GRAPHIC = "getDataType";
     private static String host=Server.getInstance().getIpAddress();
+    AlphaAnimation inAnimation;
+    AlphaAnimation outAnimation;
+    private FrameLayout progressBarHolder;
+    private String kind;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Intent intent = getIntent();
+        kind = intent.getStringExtra(DisplayMessageActivity.GET_GRAPHIC);
         //if we lost the data we go back to the menu
         if(DataUser.getInstance()==null)
         {
-            Intent intent = new Intent(this, DisplayMessageActivity.class);
+            intent = new Intent(this, DisplayMessageActivity.class);
             intent.putExtra(EXTRA_MESSAGE, "@string/resfresh");
             startActivity(intent);
             return;
         }
         setContentView(R.layout.activity_graphic);
-        /*Toolbar myToolbar = (Toolbar) findViewById(R.id.);
-        setSupportActionBar(myToolbar);*/
-        Intent intent = getIntent();
-        String message = intent.getStringExtra(DisplayMessageActivity.GET_GRAPHIC);
-        TextView textView = findViewById(R.id.textView3);
-        textView.setText(message);
+        progressBarHolder = findViewById(R.id.progressBarHolder);
 
-        LineGraphSeries<DataPoint> highLimit = new LineGraphSeries<>();
+    }
+    public void onStart() {//initialize graphic elements and Data arrays
+        super.onStart();
+
+
+        TextView textView = findViewById(R.id.textView3);
+        textView.setText(kind);
+
+        LineGraphSeries<DataPoint> highLimit = new LineGraphSeries<>();//the red lines, up and down
         LineGraphSeries<DataPoint> lowLimit = new LineGraphSeries<>();
         ArrayList<Double> data = new ArrayList<>();//it will take the data of the choosen table
-        switch (message) {
+        switch (kind) {
             case "CARDIO": ///depends on the chosen table
                 textView.setText(R.string.button_cardio);
                 highLimit.appendData(new DataPoint(0, 100), true, 2);
@@ -88,12 +102,11 @@ public class Graphic extends AppCompatActivity {
         GraphView graph = findViewById(R.id.graph);
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMaxX(24);
-        /*graph.getViewport().setScrollable(true);
-        graph.getViewport().setMinX(10);*/
         graph.addSeries(highLimit);
         graph.addSeries(lowLimit);
         highLimit.setColor(Color.RED);
         lowLimit.setColor(Color.RED);
+        /*we put the data inside "data" into the graph*/
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>();
         for(int j=0; j<data.size();j++)
         {
@@ -111,19 +124,21 @@ public class Graphic extends AppCompatActivity {
                 warning++;
 
         }
+
+        /*To show statistics to the user in list view*/
         average = average/data.size();
         ListView infolist= findViewById(R.id.listInfo);
         String[] title;
         Drawable[] icon;
         String[] info;
-        if(warning>0)
+        if(warning>0)//if there is a problem
         {
             title= new String[]{getString(R.string.average), getString(R.string.warning)};
             icon= new Drawable[]{getResources().getDrawable(android.R.drawable.ic_search_category_default),getResources().getDrawable(android.R.drawable.ic_dialog_alert)};
-            String warn="You go beyond the limits "+warning +" times";
+            String warn=getString(R.string.limit)+warning +" "+getString(R.string.x);
             info=new String[]{String.valueOf(average),warn};
         }
-        else
+        else//if he is healthy
         {
             title= new String[]{getString(R.string.average)};
             icon= new Drawable[]{getResources().getDrawable(android.R.drawable.ic_search_category_default)};
@@ -132,7 +147,6 @@ public class Graphic extends AppCompatActivity {
         ListInfo listInfo= new ListInfo(getApplicationContext(),title,info,icon);
         infolist.setAdapter(listInfo);
     }
-
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {//here to save datas
         super.onSaveInstanceState(savedInstanceState);
@@ -157,6 +171,20 @@ public class Graphic extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         //take the xml file menu and put in here
         getMenuInflater().inflate(R.menu.menu, menu);
+        switch(kind)//to put the image of data type to the top
+        {
+            case "CARDIO":
+                menu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.mipmap.cardiofreq));
+                break;
+            case "TEMP":
+                menu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.mipmap.thermometer));
+                break;
+            case "ACCEL":
+                menu.getItem(0).setIcon(ContextCompat.getDrawable(this, R.mipmap.accelerometer));
+                break;
+
+        }
+
         return true;
     }
     @Override
@@ -186,18 +214,8 @@ public class Graphic extends AppCompatActivity {
             return true;
 
             case R.id.action_refresh:
-                try {
-                    new CallServer().execute("").get();
-                    TextView textView = findViewById(R.id.textView3);
-                    String kind= textView.getText().toString();
-                    intent = new Intent(this, Graphic.class);
-                    intent.putExtra(GET_GRAPHIC, kind);
-                    startActivity(intent);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                new CallServer().execute("");
+
                 return true;
 
             default:
@@ -221,50 +239,52 @@ public class Graphic extends AppCompatActivity {
 
                 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+
                 try {
                     String on= "{\"type\":\"Data\"}";
+
                     out.println(on);
-                    /*ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-                    out.writeObject(ok);//Send the message "Data" to the server to have back all the data*/
                     String message = in.readLine();
                     try {
+
+                        //FIRST we put what we got into a json array
+
                         JSONArray jCardio = new JSONArray(message);
-                        System.out.println("Json array : "+jCardio);
                         ArrayList<Double> fill=new ArrayList<>();
+
+                        //THEN we will check that for each category we got it into the JSONArray
+
                         for (int i=0;i<jCardio.length();i++){
                             //fill.add(jCardio.getDouble(i));
                             if(jCardio.getJSONObject(i).get("type").equals("heartrate"))
                             {
                                 fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
                         }
                         DataUser.getInstance().setCrd(fill);
-                        fill=new ArrayList<>();
+                        fill= new ArrayList<>();
                         for (int i=0;i<jCardio.length();i++){
-                            //fill.add(jCardio.getDouble(i));
                             if(jCardio.getJSONObject(i).get("type").equals("temperature"))
                             {
                                 fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
                         }
                         DataUser.getInstance().setTmp(fill);
                         fill=new ArrayList<>();
                         for (int i=0;i<jCardio.length();i++){
-                            //fill.add(jCardio.getDouble(i));
                             if(jCardio.getJSONObject(i).get("type").equals("acceleration"))
                             {
                                 fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
                         }
                         DataUser.getInstance().setAcc(fill);
-
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
+                    // clean up:
+                    // close the output stream
+                    // close the input stream
+                    // close the socket
                     out.close();
                     in.close();
                     client.close();   //closing the connection
@@ -287,10 +307,32 @@ public class Graphic extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
+
+            outAnimation = new AlphaAnimation(1f, 0f);
+            outAnimation.setDuration(200);
+            progressBarHolder.setAnimation(outAnimation);
+            progressBarHolder.setVisibility(View.GONE);
+            ProgressBar pb = findViewById(R.id.logWait);
+            pb.setVisibility(View.GONE);
+            Intent intent = getIntent();
+            String message = intent.getStringExtra(DisplayMessageActivity.GET_GRAPHIC);
+            intent = new Intent(getBaseContext(), Graphic.class);
+            intent.putExtra(GET_GRAPHIC,message);
+            startActivity(intent);
+            // might want to change "executed" for the returned string passed
+            // into onPostExecute() but that is upto you
         }
 
         @Override
-        protected void onPreExecute() {}
+        protected void onPreExecute() {
+
+            inAnimation = new AlphaAnimation(0f, 1f);
+            inAnimation.setDuration(200);
+            progressBarHolder.setAnimation(inAnimation);
+            progressBarHolder.setVisibility(View.VISIBLE);
+            ProgressBar pb = findViewById(R.id.logWait);
+            pb.setVisibility(View.VISIBLE);
+        }
 
         @Override
         protected void onProgressUpdate(Void... values) {}

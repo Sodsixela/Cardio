@@ -13,6 +13,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import java.io.BufferedReader;
@@ -30,6 +32,8 @@ public class DisplayMessageActivity extends AppCompatActivity{
     public static final String GET_GRAPHIC = "getDataType";
     private static int port = 8088;
     private static String host=Server.getInstance().getIpAddress();
+
+    /*graphical elements*/
     private FrameLayout progressBarHolder;
     AlphaAnimation inAnimation;
     AlphaAnimation outAnimation;
@@ -39,7 +43,7 @@ public class DisplayMessageActivity extends AppCompatActivity{
     private Button button5;
     private Button button6;
 
-    protected void onCreate(Bundle savedInstanceState) {//initialise the page
+    protected void onCreate(Bundle savedInstanceState) {//initialize the page
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_display_message);
 
@@ -52,8 +56,34 @@ public class DisplayMessageActivity extends AppCompatActivity{
         textView.setText(message);
     }
 
-    protected void onStart() {
+    protected void onStart() {//initialize elements
         super.onStart();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        /*TEST to see if you have at least a number in each alert category
+        need to be in onstart() in case you change teh parameter and come back (without going in onCreate() then)
+         */
+        boolean test1=false,test2=false;
+        for(int i=1;i<=3;i++)//we alert close friends number
+        {
+            System.out.println("."+prefs.getString("num"+i,"")+".");
+            if(!(prefs.getString("num"+i,"").equals(" ") || prefs.getString("num"+i,"").equals("")) ){
+                test1 = true;
+            }
+        }
+        System.out.println("."+prefs.getString("doc","")+".");
+        System.out.println("."+prefs.getString("emergency","")+".");
+        if(!(prefs.getString("doc","").equals(" ") || prefs.getString("doc","").equals("")))
+            test2=true;
+        else if(!(prefs.getString("emergency","").equals(" ") || prefs.getString("emergency","").equals("")))
+            test2=true;
+        System.out.println(test1+" "+test2);
+        if(!(test1 && test2))
+        {
+            Toast.makeText(getApplicationContext(), getString(R.string.needNumbers),Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);//to change of activity
+            startActivity(intent);
+        }
         button2=findViewById(R.id.button2);
         button3=findViewById(R.id.button3);
         button4=findViewById(R.id.button4);
@@ -62,16 +92,17 @@ public class DisplayMessageActivity extends AppCompatActivity{
         port = 8088;
         progressBarHolder = findViewById(R.id.progressBarHolder);
         Context context = getApplicationContext();
-        if (Server.getInstance().getIpAddress() == null) {//SHOULD REPLACED BY PERSISTENCE
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            System.out.println("host:"+prefs.getString("host","0"));
+        if (Server.getInstance().getIpAddress() == null) {//if the server has been deleted in Server
             Server.getInstance().setIpAddress(prefs.getString("host",""));
         }
         host = Server.getInstance().getIpAddress();
+
+        /*if some data have been deleted*/
         if (DataUser.getInstance().getAcc()==null || DataUser.getInstance().getTmp()==null || DataUser.getInstance().getCrd()==null  ) {
             new CallServer().execute("");//to call the server we need a thread
         }
     }
+
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
@@ -98,6 +129,7 @@ public class DisplayMessageActivity extends AppCompatActivity{
         intent.putExtra(GET_GRAPHIC, "CARDIO");//with a a message for wich graphic we should watch
         startActivity(intent);
     }
+
 
     public void getTemp(View view)
     {
@@ -127,9 +159,11 @@ public class DisplayMessageActivity extends AppCompatActivity{
     {
         new alertMessage().execute("EMERGENCY");
     }
-    ///ASYNC TASK TO GET DATA
-    //this here that we put data into DataUser
+    public void stopAlert(View view){
+        stopService(new Intent(this, Alert.class));
+    }
 
+    /*send a message un UDP to recreate an alert*/
     private class alertMessage extends AsyncTask<String,Void,Void>{
 
         @Override
@@ -157,6 +191,11 @@ public class DisplayMessageActivity extends AppCompatActivity{
             return null;
         }
     }
+
+
+    /*ASYNC TASK TO GET DATA
+    this here that we put data into DataUser
+    Else work like callserver in login*/
     private class CallServer extends AsyncTask<String, Void, String> {
 
         @Override
@@ -183,32 +222,26 @@ public class DisplayMessageActivity extends AppCompatActivity{
 
                         //THEN we will check that for each category we got it into the JSONArray
 
-                        for (int i=0;i<jCardio.length();i++){
-                            //fill.add(jCardio.getDouble(i));
+                        for (int i=0;i<jCardio.length();i++){//we select the value of heartrate
                             if(jCardio.getJSONObject(i).get("type").equals("heartrate"))
                             {
                                 fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                             //   System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
                         }
-                        DataUser.getInstance().setCrd(fill);
-                        fill= new ArrayList<>();
+                        DataUser.getInstance().setCrd(fill);//and then fill it
+                        fill= new ArrayList<>();//same we the other kind of data
                         for (int i=0;i<jCardio.length();i++){
-                            //fill.add(jCardio.getDouble(i));
                             if(jCardio.getJSONObject(i).get("type").equals("temperature"))
                             {
                                 fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                                //System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
                         }
                         DataUser.getInstance().setTmp(fill);
                         fill=new ArrayList<>();
                         for (int i=0;i<jCardio.length();i++){
-                            //fill.add(jCardio.getDouble(i));
                             if(jCardio.getJSONObject(i).get("type").equals("acceleration"))
                             {
                                 fill.add(jCardio.getJSONObject(i).getDouble("value"));
-                             //   System.out.println(jCardio.getJSONObject(i).getDouble("value"));
                             }
                         }
                         DataUser.getInstance().setAcc(fill);
@@ -222,7 +255,6 @@ public class DisplayMessageActivity extends AppCompatActivity{
                     out.close();
                     in.close();
                     client.close();   //closing the connection
-                    //textView.setText("finish");
                 } catch (UnknownHostException e) {
                     System.err.println("Trying to connect to unknown host: " + e);
                 } catch (IOException e) {
@@ -241,6 +273,7 @@ public class DisplayMessageActivity extends AppCompatActivity{
 
         @Override
         protected void onPostExecute(String result) {
+            /*enable graphic elements and stop progress bar*/
             button2.setEnabled(true);
             button3.setEnabled(true);
             button4.setEnabled(true);
@@ -252,13 +285,11 @@ public class DisplayMessageActivity extends AppCompatActivity{
             progressBarHolder.setVisibility(View.GONE);
             ProgressBar pb = findViewById(R.id.logWait);
             pb.setVisibility(View.GONE);
-            // might want to change "executed" for the returned string passed
-            // into onPostExecute() but that is upto you
         }
 
         @Override
         protected void onPreExecute() {
-
+             /*disable graphic elements and launch progress bar*/
             button2.setEnabled(false);
             button3.setEnabled(false);
             button4.setEnabled(false);

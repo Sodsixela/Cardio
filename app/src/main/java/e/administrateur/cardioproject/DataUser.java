@@ -7,6 +7,7 @@ class DataUser {//we stock here all the user data from the server
     private ArrayList<Double> tmp;
     private ArrayList<Double> acc;
     private ArrayList<Double> crd;
+    private boolean run=true;
 
     ArrayList<Double> getTmp() {
         return tmp;
@@ -32,6 +33,9 @@ class DataUser {//we stock here all the user data from the server
         this.crd = cardio;
     }
 
+    void setRun(boolean run){this.run = run;}
+
+    boolean getRun(){return run;}
     static DataUser getInstance() {
 
         return ourInstance;

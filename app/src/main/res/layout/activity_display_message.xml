@@ -66,12 +66,14 @@
     <Button
         android:id="@+id/button2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:background="@color/colorCardio"
+        android:drawableLeft="@mipmap/cardiofreq"
+        android:gravity="left|center_vertical"
         android:onClick="getCardio"
         android:text="@string/button_cardio"
         app:layout_constraintBottom_toTopOf="@+id/button3"
@@ -86,17 +88,21 @@
     <Button
         android:id="@+id/button3"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginTop="8dp"
         android:background="@color/colorTemp"
+        android:drawableLeft="@mipmap/thermometer"
+        android:gravity="left|center_vertical"
         android:onClick="getTemp"
         android:text="@string/button_temperature"
         app:layout_constraintBottom_toTopOf="@+id/button4"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/button4"
@@ -109,6 +115,8 @@
         android:background="@color/colorAccel"
         android:onClick="getAccel"
         android:text="@string/button"
+        android:drawableLeft="@mipmap/accelerometer"
+        android:gravity="left|center_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -116,17 +124,18 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.4" />
+        app:layout_constraintVertical_bias="0.373" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_marginBottom="156dp"
+        android:layout_marginBottom="184dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 
@@ -134,25 +143,25 @@
             android:id="@+id/."
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginRight="4dp"
             android:layout_weight="1"
             android:background="@android:color/darker_gray"
             android:onClick="sendALERT"
             android:text="@string/alert"
-            android:layout_marginRight="4dp"
             android:textColor="@android:color/holo_red_dark"
             tools:layout_editor_absoluteX="34dp"
             tools:layout_editor_absoluteY="329dp" />
 
         <Button
             android:id="@+id/button8"
-            android:background="@android:color/darker_gray"
-            android:textColor="@android:color/holo_red_dark"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:onClick="sendEMERGENCY"
             android:layout_marginLeft="4dp"
+            android:layout_weight="1"
+            android:background="@android:color/darker_gray"
+            android:onClick="sendEMERGENCY"
             android:text="@string/emergency"
+            android:textColor="@android:color/holo_red_dark"
             tools:layout_editor_absoluteX="188dp"
             tools:layout_editor_absoluteY="329dp" />
     </LinearLayout>
@@ -167,6 +176,19 @@
         android:textColor="@color/colorError"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintLeft_toLeftOf="parent" />
+
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="8dp"
+        android:onClick="stopAlert"
+        android:text="@string/stopAlert"
+        app:layout_constraintRight_toRightOf="parent"
+        android:background="@android:color/darker_gray"
+        android:textColor="@android:color/holo_red_dark"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
 
 </android.support.constraint.ConstraintLayout>

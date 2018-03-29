@@ -14,14 +14,11 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -39,13 +36,13 @@ import java.util.List;
 import java.util.Locale;
 
 public class Alert extends Service {
-    private PowerManager pm;
-    private PowerManager.WakeLock wl;
+    private AsyncTask alert;
     public Alert() {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public void onCreate() {
+        //create notification
         Intent notificationIntent = new Intent(this, Alert.class);
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(this, 0, notificationIntent, 0);
@@ -53,64 +50,46 @@ public class Alert extends Service {
         Notification notification =
                 new Notification.Builder(this)
                         .setContentTitle(getString(R.string.notifTitle))
-                        .setSmallIcon(R.mipmap.clogo_round)
+                        .setSmallIcon(R.mipmap.logo)
                         .setContentIntent(pendingIntent)
                         .build();
 
         startForeground(110, notification);
-        /*PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "MyWakelockTag");
-        wakeLock.acquire();*/
-
-        //test making the application alive even phone locked
-        /*pm = (PowerManager) getApplicationContext().getSystemService(
-                getApplicationContext().POWER_SERVICE);*/
-
         getLocation();//to have at least one location
-        /*Intent i = new Intent(getApplicationContext(), Alert.class);
-        PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),3333,i, PendingIntent.FLAG_CANCEL_CURRENT);
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.SECOND, 60);
-        AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
-        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,cal.getTimeInMillis(), pi);*/
-        new AlertCall().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);//starting the thread
+        alert= new AlertCall().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);//starting the thread
     }
     public void onDestroy()
     {
-        wl.release();
+        alert.cancel(true);//we stop the thread too
     }
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
+
     }
 
+    //we already got the permission
     @SuppressLint("MissingPermission")
     private String getLocation()
     {
         String addressText="";
-        Location localisation = null;
-        System.out.println("loc: "+localisation);
+        Location localisation;
         LocationManager locationManager = (LocationManager) getBaseContext().getSystemService(Context.LOCATION_SERVICE);
         ///we huse NETWORK but can work with gps
 
-        //locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, new myListener(), null);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 1000, new myListener());
-        //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 1000, new myListener());
+        if (locationManager != null) {
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 100, 1000, new myListener());
+        }
         localisation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        System.out.println("loc: "+localisation);
         if(localisation!=null)//if it's null, then there is a problem or localisation isn't activated on the phone
         {
-            System.out.println(localisation.getLatitude());
-            //localisation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            //System.out.println("loc: "+localisation);
+
             Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());//to get the address from location
-            List<Address> address = null;
+            List<Address> address;
             try {
                 address = geocoder.getFromLocation(localisation.getLatitude(), localisation.getLongitude(), 1);
                 addressText = getString(R.string.place)+" "+String.format("%s, %s, %s",
-                        //address.get(0).getMaxAddressLineIndex() > 0 ? address.get(0).getAddressLine(0) : "",
                         address.get(0).getThoroughfare(),
                         address.get(0).getLocality(),
                         address.get(0).getCountryName());
@@ -118,6 +97,7 @@ public class Alert extends Service {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            /*we still keep the longitutude lattitude*/
             addressText+="\n"+getString(R.string.Long)+": "+localisation.getLatitude()+"\n"+getString(R.string.Lat)+": "+localisation.getLongitude();
         }
 
@@ -126,7 +106,7 @@ public class Alert extends Service {
     private class myListener implements LocationListener {
         @Override
         public void onLocationChanged(Location location) {
-            System.out.println("main Latitude " + location.getLatitude() + " Longitude " + location.getLongitude());
+
         }
 
         @Override
@@ -145,6 +125,7 @@ public class Alert extends Service {
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class AlertCall extends AsyncTask<Void, String, String>{
         DatagramSocket socket;
 
@@ -152,54 +133,44 @@ public class Alert extends Service {
         @Override
         protected String doInBackground(Void... params) {
 
-            String responseLine = null;
             Looper.prepare();
             //Keep a socket open to listen to all the UDP trafic that is destined for this port
             try {
-                System.out.println("alert ready");
                 socket = new DatagramSocket(8000, InetAddress.getByName("0.0.0.0"));
                 socket.setBroadcast(true);
-                while (true) {
+                socket.setSoTimeout(5000);//we set a time out to check if the thread is canceled
+                byte[] recvBuf = new byte[1500];
+                while (!isCancelled()) {//if service still exist
                     //Receive a packet
-                    byte[] recvBuf = new byte[1500];
                     DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
-                    /*WifiManager wifi;
-                    wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                    WifiManager.MulticastLock wifiLock = wifi.createMulticastLock("wifiOn");
-                    wifiLock.acquire();*/
-                    WifiManager wMgr = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                    WifiManager.WifiLock wifiLock = wMgr.createWifiLock(WifiManager.WIFI_MODE_FULL, "MyWifiLock");
-                    wifiLock.acquire();
-                    pm=(PowerManager) getApplicationContext().getSystemService(POWER_SERVICE);
-                    wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "alertOff");
-                    wl.acquire();
-                    socket.receive(packet);
-                    //Packet received
-                    System.out.println("Packet received, data: " + new String(packet.getData()).trim());
-                    //See if the packet holds the right command (message)
-                    String message = new String(packet.getData()).trim();
-                    //We will send here danger message
-                    if (message.equals("ALERT")) {
-                       onProgressUpdate("ALERT");
+                        try{
+                            socket.receive(packet);
+                            if(packet.getData()!=null)
+                            {
+                                //Packet received
+                                //See if the packet holds the right command (message)
+                                String message = new String(packet.getData()).trim();
+                                //We will send here danger message
+                                if (message.equals("ALERT")) {
+                                    onProgressUpdate("ALERT");
 
-                    }
-                    else if(message.equals("EMERGENCY"))
-                    {
-                        onProgressUpdate("EMERGENCY");
-                    }
-                    wl.release();
-                    wifiLock.release();
+                                } else if (message.equals("EMERGENCY")) {
+                                    onProgressUpdate("EMERGENCY");
+                                }
+
+                            }
+                        } catch (IOException e) {
+
+                        }
+
                 }
             } catch (SocketException e) {
                 e.printStackTrace();
             } catch (UnknownHostException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            System.out.println("end ");
             Looper.loop();
-            return responseLine;
+            return null;
         }
 
         @Override
@@ -210,7 +181,7 @@ public class Alert extends Service {
         protected void onPreExecute() {
         }
         @Override
-        protected void onProgressUpdate(String... values) {
+        protected void onProgressUpdate(String... values) {//We have catched an alert
             Context context=getBaseContext();
             String addressText="";
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);//to get settings like if gps is authorized by the user
@@ -221,39 +192,30 @@ public class Alert extends Service {
                 values[0]=getString(R.string.alert);
                 for(int i=1;i<=3;i++)//we alert close friends number
                 {
-                    if(!prefs.getString("num"+i,"").equals(""))
+                    if(!prefs.getString("num"+i,"").equals(" "))
                         numbers.add(prefs.getString("num"+i,""));
                 }
             }
             else if (values[0].equals("EMERGENCY"))//we alert emergency, doctors
             {
                 values[0]=getString(R.string.emergency);
-                if(!prefs.getString("doc","").equals(""))
-                    numbers.add(prefs.getString("doc",""));
-                if(!prefs.getString("emergency","").equals(""))
+                if(!prefs.getString("doc","").equals(" "))
+                    numbers.add(prefs.getString("doc","") );
+                if(!prefs.getString("emergency","").equals(" "))
                     numbers.add(prefs.getString("emergency",""));
             }
             if(prefs.getBoolean("gps",false)) {//if gps authorized
 
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    addressText=getLocation();
+                    addressText=getLocation();//we take the location  if we can of course
                 }
-
-                //locationManager = (LocationManager) User.getC().getSystemService(Context.LOCATION_SERVICE);
-                //Location localisation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
             }
-            System.out.println("gps "+prefs.getBoolean("gps",false));
-
-               /* System.out.println("Latitude" +localisation.getLatitude()+ " Longitude" + localisation.getLongitude());
-                Toast.makeText(context, "Latitude" +localisation.getLatitude(), Toast.LENGTH_SHORT).show();
-                Toast.makeText(context, "Longitude" + localisation.getLongitude(), Toast.LENGTH_SHORT).show();*/
             try
             {
                 if(ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
                     for (String number : numbers) {//we send the message to each numbers
                         SmsManager.getDefault().sendTextMessage(number, null, values[0]+"\n"+User.getName()+" "+getString(R.string.danger)+" "+addressText, null, null);
-
+                        System.out.print(number);
                     }
                 }
 
@@ -263,26 +225,6 @@ public class Alert extends Service {
                 ex.printStackTrace();
             }
 
-            //FOR TEST
-            //Should be deleted for the final version
-
-            if(prefs.getBoolean("call",false)) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
-                intent.setData(Uri.parse("tel:0631392430"));
-                //frederic 0631392430
-                //maxime 0606837803
-                //alexis 0651232165
-                //JD 0782166140
-                try {
-
-                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
-                        context.startActivity(intent);
-                    }
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            }
         }
     }
 }

@@ -41,4 +41,10 @@
     <string name="first">"Première utilisation "</string>
     <string name="signAgain">"Serveur trouvé, réessayer "</string>
     <string name="alertTest">Simuler une alerte</string>
+    <string name="GPSdetail">Utiliser le gps pour plus de précision</string>
+    <string name="stopAlert">Arrêter l\'écouteur d\'alerte</string>
+    <string name="x">fois</string>
+    <string name="limit">"Vous avez dépassé les limites "</string>
+    <string name="close">Proche</string>
+    <string name="needNumbers">Parametrez un numéro pour chaque catégorie d\'alerte</string>
 </resources>

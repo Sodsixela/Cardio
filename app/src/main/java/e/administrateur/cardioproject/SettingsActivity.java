@@ -1,5 +1,6 @@
 package e.administrateur.cardioproject;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
@@ -43,6 +44,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
     private static String data;
+    @SuppressLint("StaticFieldLeak")
     private static Context context;
     private static EditTextPreference name;
     private static EditTextPreference password;
@@ -56,47 +58,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             @Override
             public void onSharedPreferenceChanged(
                     SharedPreferences preference, String key) {
-                //String value = preference.getString("name", "NULL");
-                   /* if (preference.equals("name")) {
-                        // update the changed gallery name to summary filed
 
-// Set up the input
-                        //final EditText input = new EditText(this);
-                        //final EditTextPreference input_name = (EditTextPreference) findPreference("name");
-                        //SettingsActivity set = new SettingsActivity();
-
-                        data = name.getText().toString();
-                        System.out.println("data: "+data);
-                        try {
-                            if(!data.equals(User.getName()))
-                                new SettingsActivity.CallServer().execute("Username").get();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        }
-
-                }
-                else if (preference.equals("pwd")) {
-                    // update the changed gallery name to summary filed
-
-// Set up the input
-                    //final EditText input = new EditText(this);
-                    //final EditTextPreference input_name = (EditTextPreference) findPreference("name");
-                    //SettingsActivity set = new SettingsActivity();
-
-                    data = set.getName();password.getText().toString();
-                    System.out.println(data);
-                    try {
-                        if(!data.equals(User.getPassword()))
-                            new SettingsActivity.CallServer().execute("Password").get();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-                }*/
             }
         };
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
@@ -110,8 +72,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 if (preference.getKey().equals("name")) {
                     // update the changed gallery name to summary filed
 
-// Set up the input
-                    data = /*set.getName();set.name.getText().toString()*/stringValue;
+                    // Set up the input
+                    data = stringValue;
 
                             try {
                                 if(!data.equals(User.getName()) && !data.equals(""))
@@ -129,14 +91,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 }
                 else if (preference.getKey().equals("pwd")) {
                     // update the changed gallery name to summary filed
-                    data = /*set.getName();set.password.getText().toString()*/stringValue;
+                    data =stringValue;
                     try {
                         if(!data.equals(User.getPassword()) && !data.equals(""))
                         {
                             new SettingsActivity.CallServer().execute("Password").get();
-                            password.setText("");
                             Toast.makeText(context, "Changed to '"+data+"'",Toast.LENGTH_SHORT).show();
-
                         }
 
                     } catch (InterruptedException e) {
@@ -146,6 +106,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     }
 
                     preference.setSummary(stringValue);
+                    password.setText("");
                 }
             }
             else if (preference.getKey().equals("num1")) {
@@ -207,8 +168,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         createListener();
         setupActionBar();
         context= getApplicationContext();
-        //TextView name= (TextView) findViewById(R.id.chgeName);
-        //name.setText(User.getName());
     }
 
     /**
@@ -282,42 +241,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            /*SwitchPreference call = (SwitchPreference) findPreference("call");
-            SwitchPreference sms = (SwitchPreference) findPreference("sms");
-            SwitchPreference gps = (SwitchPreference) findPreference("gps");*/
 
-            //call.setChecked(savedInstanceState.getBoolean("call",false));
-            //gps.setChecked(savedInstanceState.getBoolean("gps",true));
             password = (EditTextPreference) findPreference("pwd");
             name = (EditTextPreference) findPreference("name");
-            /*name.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(
-                        android.preference.Preference preference, Object newValue) {
-                    System.out.print("hey");
-                    data = name.getText().toString();//.input_name.getText().toString();
-                    System.out.println(data);
-                    try {
-                        new CallServer().execute("Username").get();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-                    return true;
-                }
-            });*/
-            /*SettingsActivity set = new SettingsActivity();
 
-            data = set.getName();//.input_name.getText().toString();
-            System.out.println(data);
-            try {
-                new SettingsActivity.CallServer().execute("Username").get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }*/
             name.setText(User.getName());
             password.setText("");
             bindPreferenceSummaryToValue(findPreference("name"));
@@ -346,6 +273,21 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_notification);
             setHasOptionsMenu(true);
+            EditTextPreference num1= (EditTextPreference) findPreference("num1");
+            if(num1.getText().toString().equals(" "))
+                num1.setText("");
+            EditTextPreference num2= (EditTextPreference) findPreference("num2");
+            if(num2.getText().toString().equals(" "))
+                num2.setText("");
+            EditTextPreference num3= (EditTextPreference) findPreference("num3");
+            if(num3.getText().toString().equals(" "))
+                num3.setText("");
+            EditTextPreference doc= (EditTextPreference) findPreference("doc");
+            if(doc.getText().toString().equals(" "))
+                doc.setText("");
+            EditTextPreference em= (EditTextPreference) findPreference("emergency");
+            if(em.getText().toString().equals(" "))
+                em.setText("");
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
@@ -367,9 +309,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     public static class CallServer extends AsyncTask<String, Void, String> {
         private final String change;
-        CallServer(String change)
+        CallServer(String change,Context c)
         {
             this.change=change;
+            context= c;
         }
         CallServer()
         {
@@ -407,10 +350,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             if(params[0].equals("Username"))
                             {
                                 editor.putString("name",data);
+                                User.setName(data);
                             }
                             else
                             {
                                 editor.putString("pwd",data);
+                                User.setPassword(data);
                             }
 
                             editor.apply();
@@ -424,7 +369,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     out.close();
                     in.close();
                     client.close();   //closing the connection
-                    //textView.setText("finish");
                 } catch (UnknownHostException e) {
                     responseLine = "Trying to connect to unknown host";
                     System.err.println("Trying to connect to unknown host: " + e);
@@ -450,8 +394,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             //if(change!=null)
                 //context=getApplicationContext();//if it's from login, need to change the context
             Toast.makeText(context.getApplicationContext(), result,Toast.LENGTH_SHORT).show();
-            /*System.out.println("zef");
-            Toast.makeText(Parameter.this, "Text", Toast.LENGTH_SHORT).show();*/
         }
 
         @Override

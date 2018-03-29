@@ -1,5 +1,6 @@
 package e.administrateur.cardioproject;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -40,6 +41,7 @@ public class ListInfo extends BaseAdapter {
         return 0;
     }
 
+    @SuppressLint("ViewHolder")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public View getView(int position, View view, ViewGroup viewGroup) {

@@ -47,5 +47,11 @@
     <string name="first">First use</string>
     <string name="signAgain">Server found, sign in again</string>
     <string name="alertTest">Simulate an alert</string>
+    <string name="GPSdetail">Make the gps enable for more effiency</string>
+    <string name="stopAlert">Stop alert listener</string>
+    <string name="limit">You go beyond the limits</string>
+    <string name="x">times</string>
+    <string name="close">Close relation</string>
+    <string name="needNumbers">Each alert category need a number</string>
 
 </resources>

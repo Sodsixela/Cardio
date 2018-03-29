@@ -42,14 +42,23 @@ public class Login extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "getMessage";
     private boolean first=false;
+
+    //components of the layout
     private EditText name;
     private EditText password;
     private TextView info;
     private ProgressBar pb;
     private Button click;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {//create the page
         super.onCreate(savedInstanceState);
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // request permission (see result in onRequestPermissionsResult() method)
+            ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION}, 123);
+        }
+
+        //we initiate each variable
         setContentView(R.layout.activity_login);
         Context context = getApplicationContext();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -58,6 +67,10 @@ public class Login extends AppCompatActivity {
         info=findViewById(R.id.textView2);
         pb = findViewById(R.id.logWait);
         click = findViewById(R.id.button);
+
+        /*We check if the name is already in the persistence
+        if fo then it is a first connection
+         */
         if(prefs.getString("name","").equals(""))
         {
             first=true;
@@ -73,52 +86,20 @@ public class Login extends AppCompatActivity {
             alertDialog.show();
             info.setText(getString(R.string.setnp));
         }
-        System.out.println("name:"+prefs.getString("name",""));
-        System.out.println("host:"+prefs.getString("host","0"));
+
+        /*if we don't have the network*/
         if(prefs.getString("host"," ").equals(" "))
         {
             new FindServer().execute("");
         }
+
         Server.getInstance().setIpAddress(prefs.getString("host",""));
-        /*try {
-            InputStream inputStream = context.openFileInput("host.txt");
-
-            if ( inputStream != null ) {
-                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                String receiveString = "";
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ( (receiveString = bufferedReader.readLine()) != null ) {
-                    stringBuilder.append(receiveString);
-                }
-                if(stringBuilder.toString().isEmpty())
-                {
-                    new FindServer().execute("");
-                }
-                else
-                {
-                    Server.getInstance().setIpAddress(stringBuilder.toString());
-                }
-                inputStream.close();
-
-            }
-        }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } /*catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }*/
-
     }
-    protected void onStart() {
 
+    protected void onStart() {
         super.onStart();
     }
+
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {//here to save datas
         super.onSaveInstanceState(savedInstanceState);
@@ -136,34 +117,31 @@ public class Login extends AppCompatActivity {
         name.setText(savedInstanceState.getString("loginName"));
         password.setText(savedInstanceState.getString("loginPwd"));
     }
-    /** Called when the user taps the Send button */
+    /* Called when the user taps the Send button */
     public void sendMessage(View view) {
         info.setText(getString(R.string.connection));
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+
+        /*We check all the permissions*/
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // request permission (see result in onRequestPermissionsResult() method)
-            ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.SEND_SMS}, 123);
+            ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION}, 123);
             info.setText(getString(R.string.acceptSMS));
             return;
         }
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // request permission (see result in onRequestPermissionsResult() method)
-            ActivityCompat.requestPermissions(Login.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
-            info.setText(getString(R.string.acceptSMS));
-            return;
-        }
-        //try {
+
         if(first)
         {
-            new FindServer().execute("");
+            new FindServer().execute("");//we search the network
             //need authorization too
-            /*AsyncTask<String, Void, String> chg = */new SettingsActivity.CallServer(name.getText().toString()).execute("Username");
+            /*For the first connection we take the username and password written and send it to the server*/
+            new SettingsActivity.CallServer(name.getText().toString(),getApplicationContext()).execute("Username");
             pause();
-            //while (!chg.isCancelled());
-            /*chg = */new SettingsActivity.CallServer(password.getText().toString()).execute("Password");
-            //while (!chg.isCancelled());
+
+            new SettingsActivity.CallServer(password.getText().toString(),getApplicationContext()).execute("Password");
+
             unlock();
-            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-            Intent intent2 = new Intent(getApplicationContext(), Alert.class);
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);//to change of activity
+            Intent intent2 = new Intent(getApplicationContext(), Alert.class);//to start the alert listener
             startService(intent2);
             Toast.makeText(getApplicationContext(), "Set some emergency phone numbers in notification", Toast.LENGTH_SHORT).show();
             //bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -172,37 +150,23 @@ public class Login extends AppCompatActivity {
         else
             new CallServer().execute("");//where we will call the server
             //we cannot do it the mai thread then we need to create a thread, CallServer
-
-        /*}/*catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }*/
-
-
     }
     public void pause()
     {
         pb.setVisibility(View.VISIBLE);
+        click.setEnabled(false);//to show the progressBar
     }
     public void unlock()
     {
         pb.setVisibility(View.GONE);
-        click.setEnabled(true);
+        click.setEnabled(true);//to hide the progress bar when it is finished
     }
     private class CallServer extends AsyncTask<String, String, String> {
 
         @Override
         protected String doInBackground(String... params) {
-            String responseLine;
-            publishProgress(getString(R.string.connection));
+            String responseLine;//we stock the answer here
 
-            try {
-                System.out.println("ip:"+ InetAddress.getByName(""));
-                // System.out.println("ip:"+InetAddress.get);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
             try {
                 Socket client = new Socket(Server.getInstance().getIpAddress(), 8088);  //connect to server
                 PrintWriter out = new PrintWriter(client.getOutputStream(), true);
@@ -212,8 +176,11 @@ public class Login extends AppCompatActivity {
                     // The capital string before each colon has a special meaning to SMTP
                     // you may want to read the SMTP specification, RFC1822/3
 
+                    /*the json that we send*/
                     String on= "{\"type\":\"Connexion\",\"name\":\""+name.getText().toString()+"\",\"pwd\":\""+password.getText().toString()+"\"}";
                     out.println(on);
+
+                    /*then we wait an answer*/
                     String message = in.readLine();
                     try {
                         JSONObject jsonObj = new JSONObject( message);
@@ -231,7 +198,6 @@ public class Login extends AppCompatActivity {
                     out.close();
                     in.close();
                     client.close();   //closing the connection
-                    //textView.setText("finish");
                 } catch (UnknownHostException e) {
                     responseLine = "Error, trying to connect to unknown host";
                     System.err.println("Error, trying to connect to unknown host: " + e);
@@ -256,8 +222,9 @@ public class Login extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String result) {
+            //we enable the button
             pb.setVisibility(View.GONE);
-            if(result.contains("Error"))
+            if(result.contains("Error"))//if there is an error maybe it is because the network changed, we check it
             {
                 info.setText(getString(R.string.searchServ));
                 new FindServer().execute("");
@@ -274,11 +241,11 @@ public class Login extends AppCompatActivity {
                 String success=getString(R.string.hello)+", "+User.getName();
                 try
                 {
-                    Bundle saveName= new Bundle();
-
-                    saveName.putString("Username", User.getName());
-                    Intent intent = new Intent(getApplicationContext(), DisplayMessageActivity.class);
-                    Intent intent2 = new Intent(getApplicationContext(), Alert.class);
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor =prefs.edit();
+                    editor.putString("Username", User.getName());
+                    Intent intent = new Intent(getApplicationContext(), DisplayMessageActivity.class);//the menu activity
+                    Intent intent2 = new Intent(getApplicationContext(), Alert.class);//the alert listener
                     startService(intent2);
                     Toast.makeText(getApplicationContext(), success, Toast.LENGTH_SHORT).show();
                     //bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -296,7 +263,7 @@ public class Login extends AppCompatActivity {
         }
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute() {//we disable the button and show the progress bar
             pb.setVisibility(View.VISIBLE);
             click.setEnabled(false);
         }
@@ -305,6 +272,8 @@ public class Login extends AppCompatActivity {
         protected void onProgressUpdate(String... values) {
         }
     }
+
+    /*We try to find the server on the same network by sending udp broadcast and waiting an anwser*/
     private class FindServer extends AsyncTask<String, String, String> {
 
         @Override
@@ -315,14 +284,14 @@ public class Login extends AppCompatActivity {
                 //Open a random port to send the package
                 DatagramSocket c = new DatagramSocket();
                 c.setBroadcast(true);
-                c.setSoTimeout(5000);
-                //byte[] sendData= "{\"type\":\"Data\"}".getBytes();
+                c.setSoTimeout(5000);//we stop if it's too long
+
                 byte[] sendData = "DISCOVER_FUIFSERVER_REQUEST".getBytes();
                 //Try the 255.255.255.255 first
+                //we want the mask
                 try {
                     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName("255.255.255.255"), 8888);
                     c.send(sendPacket);
-                    System.out.println(getClass().getName() + ">>> Request packet sent to: 255.255.255.255 (DEFAULT)");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -340,22 +309,19 @@ public class Login extends AppCompatActivity {
                         }
                         // Send the broadcast package!
                         try {
-                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
+                            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);//we send a broacast message on the local network
                             c.send(sendPacket);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        System.out.println(getClass().getName() + ">>> Request packet sent to: " + broadcast.getHostAddress() + "; Interface: " + networkInterface.getDisplayName());
-                    }
+                        }
                 }
-                System.out.println(getClass().getName() + ">>> Done looping over all network interfaces. Now waiting for a reply!");
                 publishProgress(getString(R.string.searchServ));
                 //Wait for a response
                 byte[] recvBuf = new byte[1500];
                 DatagramPacket receivePacket = new DatagramPacket(recvBuf, recvBuf.length);
-                c.receive(receivePacket);
+                c.receive(receivePacket);//we catch the answer which should be the ip address of the server
                 //We have a response
-                System.out.println(getClass().getName() + ">>> Broadcast response from server: " + receivePacket.getAddress().getHostAddress());
                 //Check if the message is correct
                 String message = new String(receivePacket.getData()).trim();
 
@@ -364,7 +330,7 @@ public class Login extends AppCompatActivity {
                     responseLine=receivePacket.getAddress().getHostAddress();
                     Server.getInstance().setIpAddress(receivePacket.getAddress().getHostAddress());
                     Context context = getApplicationContext();
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);//we stock in the persistance
                     SharedPreferences.Editor editor =prefs.edit();
                     editor.putString("host",receivePacket.getAddress().getHostAddress());
                     editor.apply();
@@ -391,7 +357,7 @@ public class Login extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String result) {
+        protected void onPostExecute(String result) {//disable each element and show the progress bar
             pb.setVisibility(View.GONE);
             click.setEnabled(true);
             if(result!=null) {

@@ -2,6 +2,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/imageGraph"
+        android:icon="@android:drawable/ic_popup_sync"
+        app:showAsAction="ifRoom"
+        android:title="" />
+    <item
         android:id="@+id/action_refresh"
         android:icon="@android:drawable/ic_popup_sync"
         android:title="@string/refresh"
@@ -9,16 +14,16 @@
 
     <item
         android:id="@+id/action_cardio"
-        android:icon="@android:drawable/ic_menu_compass"
+        android:icon="@mipmap/cardiofreq"
         android:title="@string/button_cardio"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_temp"
-        android:icon="@android:drawable/ic_menu_view"
+        android:icon="@mipmap/thermometer"
         android:title="@string/button_temperature" />
     <item
         android:id="@+id/action_accel"
-        android:icon="@android:drawable/ic_menu_rotate"
+        android:icon="@mipmap/accelerometer"
         android:title="@string/button"
         app:showAsAction="ifRoom" />
 
