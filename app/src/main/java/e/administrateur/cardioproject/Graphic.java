@@ -1,6 +1,5 @@
 package e.administrateur.cardioproject;
 
-import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -153,9 +152,7 @@ public class Graphic extends AppCompatActivity {
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
-        Intent intent = getIntent();
-        String message = intent.getStringExtra(DisplayMessageActivity.GET_GRAPHIC);
-        savedInstanceState.putString("graphic", message);
+        savedInstanceState.putString("graphic", kind);
     }
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -215,7 +212,9 @@ public class Graphic extends AppCompatActivity {
 
             case R.id.action_refresh:
                 new CallServer().execute("");
-
+                intent = new Intent(this, Graphic.class);
+                intent.putExtra(GET_GRAPHIC, kind);
+                startActivity(intent);
                 return true;
 
             default:

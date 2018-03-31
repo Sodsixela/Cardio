@@ -192,16 +192,16 @@ public class Alert extends Service {
                 values[0]=getString(R.string.alert);
                 for(int i=1;i<=3;i++)//we alert close friends number
                 {
-                    if(!prefs.getString("num"+i,"").equals(" "))
+                    if(!prefs.getString("num"+i," ").equals(" "))
                         numbers.add(prefs.getString("num"+i,""));
                 }
             }
             else if (values[0].equals("EMERGENCY"))//we alert emergency, doctors
             {
                 values[0]=getString(R.string.emergency);
-                if(!prefs.getString("doc","").equals(" "))
+                if(!prefs.getString("doc"," ").equals(" "))
                     numbers.add(prefs.getString("doc","") );
-                if(!prefs.getString("emergency","").equals(" "))
+                if(!prefs.getString("emergency"," ").equals(" "))
                     numbers.add(prefs.getString("emergency",""));
             }
             if(prefs.getBoolean("gps",false)) {//if gps authorized
@@ -215,7 +215,6 @@ public class Alert extends Service {
                 if(ContextCompat.checkSelfPermission(context, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
                     for (String number : numbers) {//we send the message to each numbers
                         SmsManager.getDefault().sendTextMessage(number, null, values[0]+"\n"+User.getName()+" "+getString(R.string.danger)+" "+addressText, null, null);
-                        System.out.print(number);
                     }
                 }
 

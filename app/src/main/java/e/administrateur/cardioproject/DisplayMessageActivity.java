@@ -66,18 +66,14 @@ public class DisplayMessageActivity extends AppCompatActivity{
         boolean test1=false,test2=false;
         for(int i=1;i<=3;i++)//we alert close friends number
         {
-            System.out.println("."+prefs.getString("num"+i,"")+".");
             if(!(prefs.getString("num"+i,"").equals(" ") || prefs.getString("num"+i,"").equals("")) ){
                 test1 = true;
             }
         }
-        System.out.println("."+prefs.getString("doc","")+".");
-        System.out.println("."+prefs.getString("emergency","")+".");
         if(!(prefs.getString("doc","").equals(" ") || prefs.getString("doc","").equals("")))
             test2=true;
         else if(!(prefs.getString("emergency","").equals(" ") || prefs.getString("emergency","").equals("")))
             test2=true;
-        System.out.println(test1+" "+test2);
         if(!(test1 && test2))
         {
             Toast.makeText(getApplicationContext(), getString(R.string.needNumbers),Toast.LENGTH_SHORT).show();
@@ -217,7 +213,6 @@ public class DisplayMessageActivity extends AppCompatActivity{
                         //FIRST we put what we got into a json array
 
                         JSONArray jCardio = new JSONArray(message);
-                        System.out.println("Json array : "+jCardio);
                         ArrayList<Double> fill=new ArrayList<>();
 
                         //THEN we will check that for each category we got it into the JSONArray
