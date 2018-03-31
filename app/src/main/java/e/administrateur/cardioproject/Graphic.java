@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -71,7 +72,7 @@ public class Graphic extends AppCompatActivity {
         ArrayList<Double> data = new ArrayList<>();//it will take the data of the choosen table
         switch (kind) {
             case "CARDIO": ///depends on the chosen table
-                textView.setText(R.string.button_cardio);
+                textView.setText(R.string.button_cardio+"(fq/h");
                 highLimit.appendData(new DataPoint(0, 100), true, 2);
                 highLimit.appendData(new DataPoint(30, 100), true, 2);
                 lowLimit.appendData(new DataPoint(0, 70), true, 2);
@@ -79,7 +80,7 @@ public class Graphic extends AppCompatActivity {
                 data = DataUser.getInstance().getCrd();
                 break;
             case "TEMP":
-                textView.setText(R.string.button_temperature);
+                textView.setText(R.string.button_temperature+"(°C/h)");
                 highLimit.appendData(new DataPoint(0, 37.8), true, 2);
                 highLimit.appendData(new DataPoint(30, 37.8), true, 2);
                 lowLimit.appendData(new DataPoint(0, 36.1), true, 2);
@@ -87,7 +88,7 @@ public class Graphic extends AppCompatActivity {
                 data = DataUser.getInstance().getTmp();
                 break;
             case "ACCEL":
-                textView.setText(R.string.button);
+                textView.setText(R.string.button+"(g/h");
                 //series = (BarGraphSeries<DataPoint>) this.series;
                 highLimit.appendData(new DataPoint(0, 30), true, 2);
                 highLimit.appendData(new DataPoint(30, 30), true, 2);
@@ -125,6 +126,8 @@ public class Graphic extends AppCompatActivity {
 
         /*To show statistics to the user in list view*/
         average = average/data.size();
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(2);
         ListView infolist= findViewById(R.id.listInfo);
         String[] title;
         Drawable[] icon;
@@ -134,13 +137,13 @@ public class Graphic extends AppCompatActivity {
             title= new String[]{getString(R.string.average), getString(R.string.warning)};
             icon= new Drawable[]{getResources().getDrawable(android.R.drawable.ic_search_category_default),getResources().getDrawable(android.R.drawable.ic_dialog_alert)};
             String warn=getString(R.string.limit)+warning +" "+getString(R.string.x);
-            info=new String[]{String.valueOf(average),warn};
+            info=new String[]{String.format("%.02f", average),warn};
         }
         else//if he is healthy
         {
             title= new String[]{getString(R.string.average)};
             icon= new Drawable[]{getResources().getDrawable(android.R.drawable.ic_search_category_default)};
-            info=new String[]{String.valueOf(average)};
+            info=new String[]{/*String.valueOf(average)*/String.format("%.02f", average)};
         }
         ListInfo listInfo= new ListInfo(getApplicationContext(),title,info,icon);
         infolist.setAdapter(listInfo);
