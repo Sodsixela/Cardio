@@ -33,4 +33,20 @@ The application needs to be linked with a Node.js server. To make it easier, we 
 
 # 4. Make sure that the smartphone and the server are connected to the same wifi network !
 
-# 5. You can run the application to interact with the server.
+# 5. Run the application
+- Run the application on your smartphone.
+- Please, follow the next two steps to connect and try the alert system.
+
+# 6. User login page in the application
+- As the server is not connected to a database (as is the case in our innovation project), the connection identifiers are fixed.
+- Username: bob / Password: 123
+- You can change these identifiers on the Node-red server by following these steps:
+	- On your server schema, double click on the "try name" node (in yellow)
+	- Change the username in the field like that: ![node-red-installation-4](https://user-images.githubusercontent.com/23191626/38163994-88183e64-34fd-11e8-8ca7-959b5f5c1d5e.JPG)
+- Make the same operation by clicking on "try pwd" to change the password.
+
+# 7. Change the default alert number
+- By default, the alert number is '911'.
+- Change it by typing your own phone number for example, to test the alert system.
+
+
