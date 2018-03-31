@@ -49,13 +49,6 @@ public class Graphic extends AppCompatActivity {
         Intent intent = getIntent();
         kind = intent.getStringExtra(DisplayMessageActivity.GET_GRAPHIC);
         //if we lost the data we go back to the menu
-        if(DataUser.getInstance()==null)
-        {
-            intent = new Intent(this, DisplayMessageActivity.class);
-            intent.putExtra(EXTRA_MESSAGE, "@string/resfresh");
-            startActivity(intent);
-            return;
-        }
         setContentView(R.layout.activity_graphic);
         progressBarHolder = findViewById(R.id.progressBarHolder);
 
@@ -63,7 +56,13 @@ public class Graphic extends AppCompatActivity {
     public void onStart() {//initialize graphic elements and Data arrays
         super.onStart();
 
+        if (DataUser.getInstance()==null || DataUser.getInstance().getAcc()==null || DataUser.getInstance().getTmp()==null || DataUser.getInstance().getCrd()==null  ) {
+            Intent intent = new Intent(this, DisplayMessageActivity.class);
+            intent.putExtra(EXTRA_MESSAGE, "@string/resfresh");
+            startActivity(intent);
+            return;
 
+        }
         TextView textView = findViewById(R.id.textView3);
         textView.setText(kind);
 
